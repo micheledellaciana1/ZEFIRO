@@ -436,13 +436,16 @@ public class MenuEditorSingleSensorBoard {
 							String YLabel = chart.getXYPlot().getRangeAxis().getLabel();
 
 							for (int i = 0; i < dataset.getSeriesCount(); i++) {
-								DManager.addColoumn(
-										((String) dataset.getSeriesKey(i) + "_" + XLabel).replace(" ", "_"));
-								DManager.addColoumn(
-										((String) dataset.getSeriesKey(i) + "_" + YLabel).replace(" ", "_"));
-								for (int j = 0; j < dataset.getItemCount(i); j += 2) {
-									DManager.add(i, (double) dataset.getX(i, j));
-									DManager.add(i + 1, (double) dataset.getY(i, j));
+
+								String labelColumnX = (dataset.getSeriesKey(i) + "_" + XLabel).replace(" ", "_");
+								String labelColumnY = (dataset.getSeriesKey(i) + "_" + YLabel).replace(" ", "_");
+
+								DManager.addColoumn(labelColumnX);
+								DManager.addColoumn(labelColumnY);
+
+								for (int j = 0; j < dataset.getItemCount(i); j++) {
+									DManager.add(labelColumnX, (double) dataset.getX(i, j));
+									DManager.add(labelColumnY, (double) dataset.getY(i, j));
 								}
 							}
 
