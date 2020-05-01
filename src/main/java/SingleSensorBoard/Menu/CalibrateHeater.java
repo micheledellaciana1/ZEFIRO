@@ -1,6 +1,7 @@
 package SingleSensorBoard.Menu;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 
 import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
@@ -30,7 +31,17 @@ public class CalibrateHeater implements PropertyChangeListener {
                 return;
             }
 
+            ArrayList<Double> Resistance = new ArrayList<Double>();
+            ArrayList<Double> Temperature = new ArrayList<Double>();
+
             if (ValueIsStable(_heater.getResistance(), 100)) {
+                double heaterResistance = _heater.getResistance().lastElement().getY();
+                for (double T = 0; T < 2000; T += 0.1) {
+                    Resistance.add(heaterResistance * (1 + (T - _T0) * _alpha + (T - _T0) * (T - _T0) * _beta));
+                    Temperature.add(T);
+                }
+
+                _heater.setLUT(new LookUpTable(Resistance, Temperature));
                 _heater.ChangeSupport.removePropertyChangeListener(this);
             }
         }

@@ -1,9 +1,11 @@
 package SingleSensorBoard.Menu;
 
 import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
@@ -23,19 +25,26 @@ import org.jfree.data.xy.XYDataset;
 import SingleSensorBoard.*;
 import SingleSensorBoard.Commands.ICommands;
 import core.ATask;
+import core.ChartFrame;
 import core.DataManager;
 import core.LoopManager;
+import core.ModChartPanel;
 import core.TaskManager;
 import core.themal.LookUpTable;
 
+import java.awt.geom.*;
+
 public class MenuEditorSingleSensorBoard {
 
-	private TaskManager _TM;
-	private ICommands _commands;
+	protected TaskManager _TM;
+	protected ICommands _commands;
+	protected ChartFrame _chart;
+	public boolean verbose = true;
 
-	public MenuEditorSingleSensorBoard(TaskManager TM, ICommands commands) {
+	public MenuEditorSingleSensorBoard(TaskManager TM, ICommands commands, ChartFrame chart) {
 		_TM = TM;
 		_commands = commands;
+		_chart = chart;
 	}
 
 	public JMenuBar constructMenuBar() {
@@ -219,8 +228,10 @@ public class MenuEditorSingleSensorBoard {
 						try {
 							_commands.SetVoltageFall(Double.valueOf(answer));
 						} catch (Exception _e) {
-							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-							_e.printStackTrace();
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
 						}
 					}
 				});
@@ -239,8 +250,10 @@ public class MenuEditorSingleSensorBoard {
 				try {
 					heater.getFeedBackController().set_target_value(Double.valueOf(answer));
 				} catch (Exception _e) {
-					JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-					_e.printStackTrace();
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
 				}
 			}
 		});
@@ -255,8 +268,10 @@ public class MenuEditorSingleSensorBoard {
 						try {
 							_commands.SetVoltageHeater(Double.valueOf(answer));
 						} catch (Exception _e) {
-							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-							_e.printStackTrace();
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
 						}
 					}
 				});
@@ -264,7 +279,7 @@ public class MenuEditorSingleSensorBoard {
 		});
 
 		menu.add(BuildFeedbackMenu(heater));
-		menu.add(BuildCalibrationHeaterMenuItem(heater));
+		menu.add(BuildCalibrationHeaterMenu(heater));
 
 		return menu;
 	}
@@ -302,6 +317,7 @@ public class MenuEditorSingleSensorBoard {
 		});
 
 		menu.add(new ActionSetFeedbackParameters("Parameters", 5, 5, 1, 10, heater));
+		menu.add(BuildCalibrationHeaterMenu(heater));
 
 		return menu;
 	}
@@ -346,17 +362,19 @@ public class MenuEditorSingleSensorBoard {
 		menu.add(new AbstractAction("Voltage Range") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String answer = JOptionPane.showInputDialog("Set Voltage Range: <Min> <Max> <Step>");
-				final String[] values = answer.split(" ");
+				final String answer = JOptionPane.showInputDialog("Set Voltage Range: <Min> <Max> <Step>");
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
 						try {
+							String[] values = answer.split(" ");
 							_ivCharacteristic.define_VPATH(Double.valueOf(values[0]), Double.valueOf(values[1]),
 									Double.valueOf(values[2]));
 						} catch (Exception _e) {
-							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-							_e.printStackTrace();
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
 						}
 					}
 				});
@@ -405,17 +423,19 @@ public class MenuEditorSingleSensorBoard {
 		menu.add(new AbstractAction("Temperature Range") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String answer = JOptionPane.showInputDialog("Set Temperature Range: <Min> <Max> <Step>");
-				final String[] values = answer.split(" ");
+				final String answer = JOptionPane.showInputDialog("Set Temperature Range: <Min> <Max> <Step>");
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
 						try {
+							String[] values = answer.split(" ");
 							_itCharacteristic.define_TPATH(Double.valueOf(values[0]), Double.valueOf(values[1]),
 									Double.valueOf(values[2]));
 						} catch (Exception _e) {
-							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-							_e.printStackTrace();
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
 						}
 					}
 				});
@@ -425,7 +445,7 @@ public class MenuEditorSingleSensorBoard {
 		return menu;
 	}
 
-	protected JMenuItem BuildExportTXT(final JFreeChart chart) {
+	protected JMenuItem BuildExportTXT() {
 		JMenuItem menuItem = new JMenuItem(new AbstractAction("Export .txt") {
 
 			@Override
@@ -440,11 +460,11 @@ public class MenuEditorSingleSensorBoard {
 					_TM.addTask(new ATask() {
 						@Override
 						public void execution() {
-							XYDataset dataset = chart.getXYPlot().getDataset();
+							XYDataset dataset = _chart.GetChartPanel().getChart().getXYPlot().getDataset();
 							DataManager DManager = new DataManager();
 
-							String XLabel = chart.getXYPlot().getDomainAxis().getLabel();
-							String YLabel = chart.getXYPlot().getRangeAxis().getLabel();
+							String XLabel = _chart.GetChartPanel().getChart().getXYPlot().getDomainAxis().getLabel();
+							String YLabel = _chart.GetChartPanel().getChart().getXYPlot().getRangeAxis().getLabel();
 
 							for (int i = 0; i < dataset.getSeriesCount(); i++) {
 
@@ -473,8 +493,8 @@ public class MenuEditorSingleSensorBoard {
 	private JMenu BuildFileMenu() {
 		JMenu menu = new JMenu("File");
 
-		menu.add(BuildChartPropertyMenu(SingleSensorBoard.getInstance().GetChartPanel().getChart()));
-		menu.add(BuildExportTXT(SingleSensorBoard.getInstance().GetChartPanel().getChart()));
+		menu.add(BuildChartPropertyMenu());
+		menu.add(BuildExportTXT());
 		menu.add(new AbstractAction("Reset") {
 
 			@Override
@@ -504,8 +524,10 @@ public class MenuEditorSingleSensorBoard {
 									break;
 							}
 						} catch (Exception _e) {
-							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-							_e.printStackTrace();
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
 						}
 					}
 				});
@@ -535,7 +557,7 @@ public class MenuEditorSingleSensorBoard {
 		return menu;
 	}
 
-	protected JMenu BuildChartPropertyMenu(final JFreeChart chart) {
+	protected JMenu BuildChartPropertyMenu() {
 		JMenu menu = new JMenu("Property Chart");
 
 		menu.add(new AbstractAction("FIFO scroll") {
@@ -544,10 +566,13 @@ public class MenuEditorSingleSensorBoard {
 				try {
 					String answer = JOptionPane.showInputDialog(
 							"Set dimension of domain window \n (to disable FIFO scroll enter a negative value):");
-					chart.getXYPlot().getDomainAxis().setFixedAutoRange(Double.valueOf(answer));
+					_chart.GetChartPanel().getChart().getXYPlot().getDomainAxis()
+							.setFixedAutoRange(Double.valueOf(answer));
 				} catch (Exception _e) {
-					JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-					_e.printStackTrace();
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
 				}
 			}
 		});
@@ -620,21 +645,52 @@ public class MenuEditorSingleSensorBoard {
 		return menu;
 	}
 
+	protected JMenu BuildCalibrationHeaterMenu(final ModeHeater heater) {
+		JMenu menu = new JMenu("Calibration");
+
+		menu.add(BuildCalibrationHeaterMenuItem(heater));
+		menu.add(new AbstractAction("Display") {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Vector<Point2D> data = new Vector<Point2D>();
+					for (int i = 0; i < heater.getLUT().get_XArray().size(); i++)
+						data.add(new Point2D.Double(heater.getLUT().get_XArray().get(i),
+								heater.getLUT().get_YArray().get(i)));
+
+					_chart.clearData();
+					_chart.addSeries(data, "Calibration");
+					_chart.GetChartPanel().getChart().getXYPlot().getDomainAxis().setLabel("Resistance [Ohm]");
+					_chart.GetChartPanel().getChart().getXYPlot().getRangeAxis().setLabel("Temperature [°C]");
+				} catch (Exception _e) {
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
+				}
+			}
+		});
+
+		return menu;
+	}
+
 	protected JMenuItem BuildCalibrationHeaterMenuItem(final ModeHeater heater) {
 		JMenuItem item = new JMenuItem(new AbstractAction("Calibrate heater") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				String answer = JOptionPane.showInputDialog(null, "Enter calibration parameters: <T0> <alpha> <beta>");
 				try {
-					String answer = JOptionPane.showInputDialog(null,
-							"Enter calibration parameters: <T0> <alpha> <beta>");
 					String values[] = answer.split(" ");
 					CalibrateHeater c = new CalibrateHeater(Double.valueOf(values[0]), Double.valueOf(values[1]),
 							Double.valueOf(values[2]), _TM, _commands, heater);
 					JOptionPane.showMessageDialog(null, "Calibrating...", "Calibration",
 							JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception _e) {
-					JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-					_e.printStackTrace();
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
 				}
 			}
 		});

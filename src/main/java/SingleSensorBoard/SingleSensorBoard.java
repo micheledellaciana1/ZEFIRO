@@ -45,7 +45,7 @@ public class SingleSensorBoard extends ChartFrame {
 		_PHWatchDog = new PowerHeaterWatchDog(_heater, _commands, _TMInstace, 0);
 		_ChamberHumidity = new ModeChamberHumidity(_commands, "ChamberHumidity", 500);
 		_ChamberTemperature = new ModeChamberTemperature(_commands, "ChamberTemperature", 500);
-		_MenuEditor = new MenuEditorSingleSensorBoard(_TMInstace, _commands);
+		_MenuEditor = new MenuEditorSingleSensorBoard(_TMInstace, _commands, this);
 
 		_heater.ChangeSupport.addPropertyChangeListener(_heaterStability);
 		_voltAmpMeter.ChangeSupport.addPropertyChangeListener(_VoltAmpStalibilty);
