@@ -8,9 +8,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import org.apache.commons.math3.stat.regression.RegressionResults;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-
 import SingleSensorBoard.Commands.ICommands;
 
 public class IVCharacteristic implements PropertyChangeListener {
@@ -22,9 +19,11 @@ public class IVCharacteristic implements PropertyChangeListener {
 	private ArrayList<Double> _VPATH;
 	private int _MarkPlaceVPATH = 0;
 	private boolean _flagChangeVoltage = true;
+	private boolean _VoltAmpIsStable;
 	private ICommands _Commands;
 	private ModeVoltAmpMeter _voltAmpMeter;
-	private int _sizeVoltAmpMeterAtChangeVoltage;
+
+	private long _timeChangedVoltageFall;
 
 	public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
 
@@ -63,57 +62,38 @@ public class IVCharacteristic implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (_flagON && evt.getPropertyName().equals("FinishedLoop"))
+		if (evt.getPropertyName().equals("VoltAmpChangedStability"))
+			_VoltAmpIsStable = (boolean) evt.getNewValue();
+
+		if (_flagON && _VoltAmpIsStable)
 			try {
 				if (_flagChangeVoltage) {
 					_Commands.SetVoltageFall(_VPATH.get(_MarkPlaceVPATH));
-					_sizeVoltAmpMeterAtChangeVoltage = _voltAmpMeter.getSize();
+					_timeChangedVoltageFall = System.currentTimeMillis();
 					_flagChangeVoltage = false;
 					return;
 				}
 
-				if (readyToAcquire(50)) {
-					double VoltageFall = _voltAmpMeter.getVoltage().lastElement().getY();
-					double Current = _voltAmpMeter.getCurrent().lastElement().getY();
-					_actualCharaceristic.add(new Point2D.Double(Current, VoltageFall));
-					_flagChangeVoltage = true;
-					_MarkPlaceVPATH++;
+				if (System.currentTimeMillis() - _timeChangedVoltageFall < 100)
+					return;
 
-					if (_MarkPlaceVPATH > _VPATH.size() - 1) {
-						_MarkPlaceVPATH = 0;
-						_oldCharacteristics.add(new SingleCharacteristic(_actualCharaceristic));
+				double VoltageFall = _voltAmpMeter.getVoltage().lastElement().getY();
+				double Current = _voltAmpMeter.getCurrent().lastElement().getY();
+				_actualCharaceristic.add(new Point2D.Double(Current, VoltageFall));
+				_flagChangeVoltage = true;
+				_MarkPlaceVPATH++;
 
-						ChangeSupport.firePropertyChange("FinishedIVCharacteristic", null, null);
-						_actualCharaceristic.clear();
-					}
+				if (_MarkPlaceVPATH > _VPATH.size() - 1) {
+					_MarkPlaceVPATH = 0;
+					_oldCharacteristics.add(new SingleCharacteristic(_actualCharaceristic));
+
+					ChangeSupport.firePropertyChange("FinishedIVCharacteristic", null, null);
+					_actualCharaceristic.clear();
 				}
 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-	}
-
-	private boolean readyToAcquire(int NPoints) {
-		if (_voltAmpMeter.getSize() > NPoints + _sizeVoltAmpMeterAtChangeVoltage)
-			if (ValueIsStable(_voltAmpMeter.getVoltage(), NPoints))
-				if (ValueIsStable(_voltAmpMeter.getCurrent(), NPoints))
-					return true;
-		return false;
-	}
-
-	private boolean ValueIsStable(Vector<Point2D> values, int NPoints) {
-		SimpleRegression RO = new SimpleRegression(true);
-		for (int i = values.size() - NPoints; i < values.size(); i++)
-			RO.addData(values.get(i).getX(), values.get(i).getY());
-
-		RegressionResults results = RO.regress();
-
-		double slope = results.getParameterEstimate(1);
-		double errSlope = results.getStdErrorOfEstimate(1);
-
-		if ((slope - errSlope) * (slope + errSlope) <= 0)
-			return true;
-		return false;
 	}
 
 	public SingleCharacteristic getActualCharacteristic() {

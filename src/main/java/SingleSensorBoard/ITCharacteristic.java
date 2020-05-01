@@ -3,9 +3,6 @@ package SingleSensorBoard;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import org.apache.commons.math3.stat.regression.RegressionResults;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -21,9 +18,12 @@ public class ITCharacteristic implements PropertyChangeListener {
 	private int _MarkPlaceTPATH = 0;
 	private boolean _flagChangeTemperature = true;
 
+	private boolean _VoltAmpIsStable;
+	private boolean _heaterIsStable;
+
 	private ModeVoltAmpMeter _voltAmpMeter;
 	private ModeHeater _heater;
-	private int _sizeHeaterAtChangeTemperature;
+	private long _timeChangedTemperature;
 
 	public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
 
@@ -63,16 +63,25 @@ public class ITCharacteristic implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (_flagON && evt.getPropertyName().equals("FinishedLoop") && _heater.getFeedbakON())
+		if (evt.getPropertyName().equals("HeaterChangedStability"))
+			_VoltAmpIsStable = (boolean) evt.getNewValue();
+
+		if (evt.getPropertyName().equals("HeaterChangedStability"))
+			_heaterIsStable = (boolean) evt.getNewValue();
+
+		if (_flagON && _heater.getFeedbakON() && _heater.getFeedbakON()) {
 			try {
 				if (_flagChangeTemperature) {
 					_heater.setTargetTemperature(_TPATH.get(_MarkPlaceTPATH));
-					_sizeHeaterAtChangeTemperature = _heater.getSize();
+					_timeChangedTemperature = System.currentTimeMillis();
 					_flagChangeTemperature = false;
 					return;
 				}
 
-				if (readyToAcquire(50)) {
+				if (System.currentTimeMillis() - _timeChangedTemperature < 1000)
+					return;
+
+				if (_VoltAmpIsStable && _heaterIsStable) {
 					double Temperature = _heater.getTemperature().lastElement().getY();
 					double Current = _voltAmpMeter.getCurrent().lastElement().getY();
 					_actualCharaceristic.add(new Point2D.Double(Temperature, Current));
@@ -91,56 +100,7 @@ public class ITCharacteristic implements PropertyChangeListener {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-	}
-
-	private boolean readyToAcquire(int NPoints) {
-		if (_heater.getSize() > NPoints + _sizeHeaterAtChangeTemperature)
-			if (ValueIsStable(_voltAmpMeter.getVoltage(), NPoints))
-				if (ValueIsStable(_voltAmpMeter.getCurrent(), NPoints))
-					if (TemperatureIsStable(_heater.getTemperature(), NPoints))
-						return true;
-		return false;
-	}
-
-	private boolean ValueIsStable(Vector<Point2D> values, int NPoints) {
-		if (values.size() < NPoints)
-			return false;
-
-		SimpleRegression RO = new SimpleRegression(true);
-		for (int i = values.size() - NPoints; i < values.size(); i++)
-			RO.addData(values.get(i).getX(), values.get(i).getY());
-
-		RegressionResults results = RO.regress();
-
-		double slope = results.getParameterEstimate(1);
-		double errSlope = results.getStdErrorOfEstimate(1);
-
-		if ((slope - errSlope) * (slope + errSlope) < 0)
-			return true;
-		return false;
-	}
-
-	private boolean TemperatureIsStable(Vector<Point2D> temperatures, int NPoints) {
-		if (temperatures.size() < NPoints)
-			return false;
-
-		double centralTime = temperatures.get(temperatures.size() - NPoints / 2).getX();
-		SimpleRegression RO = new SimpleRegression(true);
-		for (int i = temperatures.size() - NPoints; i < temperatures.size(); i++)
-			RO.addData(temperatures.get(i).getX() - centralTime, temperatures.get(i).getY());
-
-		RegressionResults results = RO.regress();
-
-		double slope = results.getParameterEstimate(1);
-		double errSlope = results.getStdErrorOfEstimate(1);
-		double intercept = results.getParameterEstimate(0);
-		double errIntercept = results.getStdErrorOfEstimate(0);
-
-		if ((slope - errSlope) * (slope + errSlope) <= 0)
-			if ((intercept - _TPATH.get(_MarkPlaceTPATH) - errIntercept)
-					* (intercept - _TPATH.get(_MarkPlaceTPATH) + errIntercept) <= 0)
-				return true;
-		return false;
+		}
 	}
 
 	public SingleCharacteristic getActualCharacteristic() {

@@ -17,9 +17,11 @@ public class SingleSensorBoard extends ChartFrame {
 
 	static private SingleSensorBoard _instance = new SingleSensorBoard(new ModChartPanel(), "SingleSensorBoard");
 	static private TaskManager _TMInstace;
-	static private ICommands _Commands;
+	static private ICommands _commands;
 	static private ModeVoltAmpMeter _voltAmpMeter;
 	static private ModeHeater _heater;
+	static private HeaterStabilityListener _heaterStability;
+	static private VoltAmpStabilityListener _VoltAmpStalibilty;
 	static private IVCharacteristic _ivCharacteristic;
 	static private ITCharacteristic _itCharacteristic;
 	static private LinearRegressionIVCharacteristic _LRIVCharacteristic;
@@ -32,20 +34,27 @@ public class SingleSensorBoard extends ChartFrame {
 		super(panel, Title);
 
 		_TMInstace = new TaskManager("TMSingleSensorBoard");
-		_Commands = SimCommands.getInstance();
-		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 10, _Commands);
-		_heater = new ModeHeater("Heater", 10, _Commands);
-		_ivCharacteristic = new IVCharacteristic(_Commands, _voltAmpMeter);
+		_commands = SimCommands.getInstance();
+		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 10, _commands);
+		_heater = new ModeHeater("Heater", 10, _commands);
+		_heaterStability = new HeaterStabilityListener(_heater, 50);
+		_VoltAmpStalibilty = new VoltAmpStabilityListener(_voltAmpMeter, 40);
+		_ivCharacteristic = new IVCharacteristic(_commands, _voltAmpMeter);
 		_itCharacteristic = new ITCharacteristic(_voltAmpMeter, _heater);
 		_LRIVCharacteristic = new LinearRegressionIVCharacteristic(_ivCharacteristic);
-		_PHWatchDog = new PowerHeaterWatchDog(_heater, _Commands, _TMInstace, 0);
-		_ChamberHumidity = new ModeChamberHumidity(_Commands, "ChamberHumidity", 500);
-		_ChamberTemperature = new ModeChamberTemperature(_Commands, "ChamberTemperature", 500);
-		_MenuEditor = new MenuEditorSingleSensorBoard(_TMInstace);
+		_PHWatchDog = new PowerHeaterWatchDog(_heater, _commands, _TMInstace, 0);
+		_ChamberHumidity = new ModeChamberHumidity(_commands, "ChamberHumidity", 500);
+		_ChamberTemperature = new ModeChamberTemperature(_commands, "ChamberTemperature", 500);
+		_MenuEditor = new MenuEditorSingleSensorBoard(_TMInstace, _commands);
 
-		_heater.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+		_heater.ChangeSupport.addPropertyChangeListener(_heaterStability);
+		_voltAmpMeter.ChangeSupport.addPropertyChangeListener(_VoltAmpStalibilty);
+
+		_VoltAmpStalibilty.ChangeSupport.addPropertyChangeListener(_ivCharacteristic);
+		_VoltAmpStalibilty.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+		_heaterStability.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+
 		_heater.ChangeSupport.addPropertyChangeListener(_PHWatchDog);
-		_voltAmpMeter.ChangeSupport.addPropertyChangeListener(_ivCharacteristic);
 		_ivCharacteristic.ChangeSupport.addPropertyChangeListener(_LRIVCharacteristic);
 	}
 
@@ -62,7 +71,7 @@ public class SingleSensorBoard extends ChartFrame {
 	}
 
 	static public ICommands getCommands() {
-		return _Commands;
+		return _commands;
 	}
 
 	static public ModeVoltAmpMeter getVoltAmpMeter() {
@@ -99,6 +108,14 @@ public class SingleSensorBoard extends ChartFrame {
 
 	static public MenuEditorSingleSensorBoard getMenuEditor() {
 		return _MenuEditor;
+	}
+
+	static public HeaterStabilityListener getHeaterStabilityListener() {
+		return _heaterStability;
+	}
+
+	static public VoltAmpStabilityListener getVoltAmpStabilityListener() {
+		return _VoltAmpStalibilty;
 	}
 
 	public void displayVoltageVsTime() {

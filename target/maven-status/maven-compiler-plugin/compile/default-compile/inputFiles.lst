@@ -5,7 +5,9 @@ C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\S
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\Commands\SingleBoardCommands.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\ListenerIVCharacteristic\LinearRegressionIVCharacteristic.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\Menu\MenuEditorSingleSensorBoard.java
+C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\VoltAmpStabilityListener.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\IVCharacteristic.java
+C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\Menu\CalibrateHeater.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\Commands\SimCommands.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\main\App.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\Menu\ActionSetFeedbackParameters.java
@@ -13,3 +15,4 @@ C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\S
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\ITCharacteristic.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\ModeChamberTemperature.java
 C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\ModeVoltAmpMeter.java
+C:\Users\utente\Documents\MvnProjct\MvnProject\SingleSensorBoard\src\main\java\SingleSensorBoard\HeaterStabilityListener.java

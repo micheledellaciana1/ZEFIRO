@@ -25,10 +25,6 @@ public class ModeHeater extends AMultipleDataStream {
         _FBC.set_target_value(0);
     }
 
-    public ICommands getCommands() {
-        return _Commands;
-    }
-
     public void setFeedBackController(FeedBackController_type1 FBC) {
         _FBC = FBC;
     }

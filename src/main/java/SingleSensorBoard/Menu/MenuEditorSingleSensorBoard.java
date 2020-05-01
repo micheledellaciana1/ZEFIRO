@@ -1,6 +1,8 @@
 package SingleSensorBoard.Menu;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.AbstractAction;
@@ -24,13 +26,16 @@ import core.ATask;
 import core.DataManager;
 import core.LoopManager;
 import core.TaskManager;
+import core.themal.LookUpTable;
 
 public class MenuEditorSingleSensorBoard {
 
 	private TaskManager _TM;
+	private ICommands _commands;
 
-	public MenuEditorSingleSensorBoard(TaskManager TM) {
+	public MenuEditorSingleSensorBoard(TaskManager TM, ICommands commands) {
 		_TM = TM;
+		_commands = commands;
 	}
 
 	public JMenuBar constructMenuBar() {
@@ -38,7 +43,7 @@ public class MenuEditorSingleSensorBoard {
 		menu.add(BuildFileMenu());
 		menu.add(BuildDisplayMenu());
 		menu.add(BuildSetMenu());
-		menu.add(BuildAdvancedMenu(SingleSensorBoard.getCommands()));
+		menu.add(BuildAdvancedMenu());
 		return menu;
 	}
 
@@ -212,9 +217,10 @@ public class MenuEditorSingleSensorBoard {
 					@Override
 					public void execution() {
 						try {
-							SingleSensorBoard.getCommands().SetVoltageFall(Double.valueOf(answer));
-						} catch (Exception e2) {
-							e2.printStackTrace();
+							_commands.SetVoltageFall(Double.valueOf(answer));
+						} catch (Exception _e) {
+							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+							_e.printStackTrace();
 						}
 					}
 				});
@@ -226,15 +232,15 @@ public class MenuEditorSingleSensorBoard {
 
 	protected JMenu BuildSetMenuHeater(final ModeHeater heater) {
 		JMenu menu = new JMenu("Heater");
-
 		menu.add(new AbstractAction("Temperature") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String answer = JOptionPane.showInputDialog("Set Temperature");
 				try {
 					heater.getFeedBackController().set_target_value(Double.valueOf(answer));
-				} catch (Exception e2) {
-					e2.printStackTrace();
+				} catch (Exception _e) {
+					JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+					_e.printStackTrace();
 				}
 			}
 		});
@@ -247,9 +253,10 @@ public class MenuEditorSingleSensorBoard {
 					@Override
 					public void execution() {
 						try {
-							heater.getCommands().SetVoltageHeater(Double.valueOf(answer));
-						} catch (Exception e2) {
-							e2.printStackTrace();
+							_commands.SetVoltageHeater(Double.valueOf(answer));
+						} catch (Exception _e) {
+							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+							_e.printStackTrace();
 						}
 					}
 				});
@@ -257,6 +264,7 @@ public class MenuEditorSingleSensorBoard {
 		});
 
 		menu.add(BuildFeedbackMenu(heater));
+		menu.add(BuildCalibrationHeaterMenuItem(heater));
 
 		return menu;
 	}
@@ -294,6 +302,7 @@ public class MenuEditorSingleSensorBoard {
 		});
 
 		menu.add(new ActionSetFeedbackParameters("Parameters", 5, 5, 1, 10, heater));
+
 		return menu;
 	}
 
@@ -345,8 +354,9 @@ public class MenuEditorSingleSensorBoard {
 						try {
 							_ivCharacteristic.define_VPATH(Double.valueOf(values[0]), Double.valueOf(values[1]),
 									Double.valueOf(values[2]));
-						} catch (Exception e2) {
-							e2.printStackTrace();
+						} catch (Exception _e) {
+							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+							_e.printStackTrace();
 						}
 					}
 				});
@@ -403,8 +413,9 @@ public class MenuEditorSingleSensorBoard {
 						try {
 							_itCharacteristic.define_TPATH(Double.valueOf(values[0]), Double.valueOf(values[1]),
 									Double.valueOf(values[2]));
-						} catch (Exception e2) {
-							e2.printStackTrace();
+						} catch (Exception _e) {
+							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+							_e.printStackTrace();
 						}
 					}
 				});
@@ -463,9 +474,7 @@ public class MenuEditorSingleSensorBoard {
 		JMenu menu = new JMenu("File");
 
 		menu.add(BuildChartPropertyMenu(SingleSensorBoard.getInstance().GetChartPanel().getChart()));
-
 		menu.add(BuildExportTXT(SingleSensorBoard.getInstance().GetChartPanel().getChart()));
-
 		menu.add(new AbstractAction("Reset") {
 
 			@Override
@@ -489,13 +498,14 @@ public class MenuEditorSingleSensorBoard {
 									SingleSensorBoard.getITCharacteristic().EraseData();
 									SingleSensorBoard.getLRIVCharacteristic().EraseData();
 									SingleSensorBoard.getInstance().ResetUI();
-									SingleSensorBoard.getCommands().ResetDevice();
+									_commands.ResetDevice();
 									break;
 								case 1:
 									break;
 							}
-						} catch (Exception e) {
-							e.printStackTrace();
+						} catch (Exception _e) {
+							JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+							_e.printStackTrace();
 						}
 					}
 				});
@@ -512,19 +522,14 @@ public class MenuEditorSingleSensorBoard {
 						+ "\n" + "Temperature Feedback: "
 						+ Boolean.toString(SingleSensorBoard.getHeater().getFeedbakON()) + "\n" + "Setted temperature: "
 						+ Double.toString(SingleSensorBoard.getHeater().getFeedBackController().getTarget()) + " °C"
-						+ "\n" + "Setted voltage Fall: "
-						+ Double.toString(SingleSensorBoard.getCommands().GetVoltageFall()) + " [V]" + "\n"
-						+ "Setted voltage heater: "
-						+ Double.toString(SingleSensorBoard.getCommands().GetVoltageHeater()) + " [a.u]" + "\n"
-						+ "Ext. Feedback: " + Boolean.toString(SingleSensorBoard.getCommands().getFeedbackExternal())
-						+ "\n" + "Bias with ext.: "
-						+ Boolean.toString(SingleSensorBoard.getCommands().getSumInputWithExternalSignal()) + "\n"
-						+ "Amp. meter autorange: "
-						+ Boolean.toString(SingleSensorBoard.getCommands().getAutorangeAmpMeter()) + "\n"
-						+ "Amp. meter range: " + Integer.toString(SingleSensorBoard.getCommands().getAmpMeterRange()),
-						"Settings", JOptionPane.INFORMATION_MESSAGE);
+						+ "\n" + "Setted voltage Fall: " + Double.toString(_commands.GetVoltageFall()) + " [V]" + "\n"
+						+ "Setted voltage heater: " + Double.toString(_commands.GetVoltageHeater()) + " [a.u]" + "\n"
+						+ "Ext. Feedback: " + Boolean.toString(_commands.getFeedbackExternal()) + "\n"
+						+ "Bias with ext.: " + Boolean.toString(_commands.getSumInputWithExternalSignal()) + "\n"
+						+ "Amp. meter autorange: " + Boolean.toString(_commands.getAutorangeAmpMeter()) + "\n"
+						+ "Amp. meter range: " + Integer.toString(_commands.getAmpMeterRange()), "Settings",
+						JOptionPane.INFORMATION_MESSAGE);
 			}
-
 		});
 
 		return menu;
@@ -533,28 +538,24 @@ public class MenuEditorSingleSensorBoard {
 	protected JMenu BuildChartPropertyMenu(final JFreeChart chart) {
 		JMenu menu = new JMenu("Property Chart");
 
-		final JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem();
-		final AbstractAction action = new AbstractAction("FIFO scroll") {
+		menu.add(new AbstractAction("FIFO scroll") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (checkbox.getState()) {
-					try {
-						String answer = JOptionPane.showInputDialog("Set dimension of domain window:");
-						chart.getXYPlot().getDomainAxis().setFixedAutoRange(Double.valueOf(answer));
-					} catch (Exception _e) {
-						_e.printStackTrace();
-					}
-				} else
-					chart.getXYPlot().getDomainAxis().setFixedAutoRange(0);
+				try {
+					String answer = JOptionPane.showInputDialog(
+							"Set dimension of domain window \n (to disable FIFO scroll enter a negative value):");
+					chart.getXYPlot().getDomainAxis().setFixedAutoRange(Double.valueOf(answer));
+				} catch (Exception _e) {
+					JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+					_e.printStackTrace();
+				}
 			}
-		};
+		});
 
-		checkbox.setAction(action);
-		menu.add(checkbox);
 		return menu;
 	}
 
-	protected JMenu BuildAdvancedMenu(final ICommands Commands) {
+	protected JMenu BuildAdvancedMenu() {
 		JMenu menu = new JMenu("Advanced");
 		menu.add(BuildAmpMeterMenu());
 
@@ -565,7 +566,7 @@ public class MenuEditorSingleSensorBoard {
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
-						Commands.setFeedbackExternal(checkboxExtFeedback.getState());
+						_commands.setFeedbackExternal(checkboxExtFeedback.getState());
 					}
 				});
 			}
@@ -581,7 +582,7 @@ public class MenuEditorSingleSensorBoard {
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
-						Commands.setSumInputWithExternalSignal(checkboxSumExternalSignal.getState());
+						_commands.setSumInputWithExternalSignal(checkboxSumExternalSignal.getState());
 					}
 				});
 			}
@@ -594,11 +595,11 @@ public class MenuEditorSingleSensorBoard {
 		menu.addMenuListener(new MenuListener() {
 			@Override
 			public void menuSelected(MenuEvent e) {
-				if (checkboxExtFeedback.getState() != Commands.getFeedbackExternal())
-					checkboxExtFeedback.setState(Commands.getFeedbackExternal());
+				if (checkboxExtFeedback.getState() != _commands.getFeedbackExternal())
+					checkboxExtFeedback.setState(_commands.getFeedbackExternal());
 
-				if (checkboxSumExternalSignal.getState() != Commands.getSumInputWithExternalSignal())
-					checkboxSumExternalSignal.setState(Commands.getSumInputWithExternalSignal());
+				if (checkboxSumExternalSignal.getState() != _commands.getSumInputWithExternalSignal())
+					checkboxSumExternalSignal.setState(_commands.getSumInputWithExternalSignal());
 			}
 
 			@Override
@@ -617,5 +618,27 @@ public class MenuEditorSingleSensorBoard {
 		JMenu menu = new JMenu("Amp Meter");
 
 		return menu;
+	}
+
+	protected JMenuItem BuildCalibrationHeaterMenuItem(final ModeHeater heater) {
+		JMenuItem item = new JMenuItem(new AbstractAction("Calibrate heater") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String answer = JOptionPane.showInputDialog(null,
+							"Enter calibration parameters: <T0> <alpha> <beta>");
+					String values[] = answer.split(" ");
+					CalibrateHeater c = new CalibrateHeater(Double.valueOf(values[0]), Double.valueOf(values[1]),
+							Double.valueOf(values[2]), _TM, _commands, heater);
+					JOptionPane.showMessageDialog(null, "Calibrating...", "Calibration",
+							JOptionPane.INFORMATION_MESSAGE);
+				} catch (Exception _e) {
+					JOptionPane.showMessageDialog(null, _e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+					_e.printStackTrace();
+				}
+			}
+		});
+
+		return item;
 	}
 }
