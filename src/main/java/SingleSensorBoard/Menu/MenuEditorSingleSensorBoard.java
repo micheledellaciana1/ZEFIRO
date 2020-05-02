@@ -2,24 +2,22 @@ package SingleSensorBoard.Menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.jfree.chart.JFreeChart;
 import org.jfree.data.xy.XYDataset;
 
 import SingleSensorBoard.*;
@@ -28,11 +26,7 @@ import core.ATask;
 import core.ChartFrame;
 import core.DataManager;
 import core.LoopManager;
-import core.ModChartPanel;
 import core.TaskManager;
-import core.themal.LookUpTable;
-
-import java.awt.geom.*;
 
 public class MenuEditorSingleSensorBoard {
 
@@ -538,19 +532,29 @@ public class MenuEditorSingleSensorBoard {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "IVCharacteristic: "
-						+ Boolean.toString(SingleSensorBoard.getIVCharacteristic().getFlagON()) + "\n"
-						+ "ITCharacteristic: " + Boolean.toString(SingleSensorBoard.getITCharacteristic().getFlagON())
-						+ "\n" + "Temperature Feedback: "
-						+ Boolean.toString(SingleSensorBoard.getHeater().getFeedbakON()) + "\n" + "Setted temperature: "
-						+ Double.toString(SingleSensorBoard.getHeater().getFeedBackController().getTarget()) + " °C"
-						+ "\n" + "Setted voltage Fall: " + Double.toString(_commands.GetVoltageFall()) + " [V]" + "\n"
-						+ "Setted voltage heater: " + Double.toString(_commands.GetVoltageHeater()) + " [a.u]" + "\n"
-						+ "Ext. Feedback: " + Boolean.toString(_commands.getFeedbackExternal()) + "\n"
-						+ "Bias with ext.: " + Boolean.toString(_commands.getSumInputWithExternalSignal()) + "\n"
-						+ "Amp. meter autorange: " + Boolean.toString(_commands.getAutorangeAmpMeter()) + "\n"
-						+ "Amp. meter range: " + Integer.toString(_commands.getAmpMeterRange()), "Settings",
-						JOptionPane.INFORMATION_MESSAGE);
+				_TM.addTask(new ATask() {
+					@Override
+					public void execution() {
+						JOptionPane.showMessageDialog(null, "IVCharacteristic: "
+								+ Boolean.toString(SingleSensorBoard.getIVCharacteristic().getFlagON()) + "\n"
+								+ "ITCharacteristic: "
+								+ Boolean.toString(SingleSensorBoard.getITCharacteristic().getFlagON()) + "\n"
+								+ "Temperature Feedback: "
+								+ Boolean.toString(SingleSensorBoard.getHeater().getFeedbakON()) + "\n"
+								+ "Setted temperature: "
+								+ Double.toString(SingleSensorBoard.getHeater().getFeedBackController().getTarget())
+								+ " °C" + "\n" + "Setted voltage Fall: " + Double.toString(_commands.GetVoltageFall())
+								+ " [V]" + "\n" + "Setted voltage heater: "
+								+ Double.toString(_commands.GetVoltageHeater()) + " [a.u]" + "\n" + "Ext. Feedback: "
+								+ Boolean.toString(_commands.getFeedbackExternal()) + "\n" + "Bias with ext.: "
+								+ Boolean.toString(_commands.getSumInputWithExternalSignal()) + "\n"
+								+ "Amp. meter autorange: " + Boolean.toString(_commands.getAutorangeAmpMeter()) + "\n"
+								+ "Amp. meter range: " + Integer.toString(_commands.getAmpMeterRange()) + "\n"
+								+ "Amp. meter ref. Resistor: "
+								+ Double.toString(_commands.getAmpMeterResistor() / 1000.) + "[kOhm]", "Settings",
+								JOptionPane.INFORMATION_MESSAGE);
+					}
+				});
 			}
 		});
 
@@ -640,7 +644,63 @@ public class MenuEditorSingleSensorBoard {
 	}
 
 	protected JMenu BuildAmpMeterMenu() {
+
 		JMenu menu = new JMenu("Amp Meter");
+
+		final JCheckBoxMenuItem checkBox = new JCheckBoxMenuItem();
+		AbstractAction action = new AbstractAction("Autorange") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_TM.addTask(new ATask() {
+					@Override
+					public void execution() {
+						_commands.setAutorangeAmpMeter(checkBox.getState());
+					}
+				});
+			}
+		};
+
+		checkBox.setAction(action);
+		menu.add(checkBox);
+		menu.addMenuListener(new MenuListener() {
+			@Override
+			public void menuSelected(MenuEvent e) {
+				_TM.addTask(new ATask() {
+					@Override
+					public void execution() {
+						checkBox.setState(_commands.getAutorangeAmpMeter());
+					}
+				});
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e) {
+			}
+
+			@Override
+			public void menuCanceled(MenuEvent e) {
+			}
+		});
+
+		menu.add(new AbstractAction("Set Ref. resistor") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final String answer = JOptionPane.showInputDialog(null, "Enter index of ref. resistor [0-7]");
+				_TM.addTask(new ATask() {
+					@Override
+					public void execution() {
+						try {
+							_commands.setAmpMeterRange(Integer.valueOf(answer));
+						} catch (Exception _e) {
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
+						}
+					}
+				});
+			}
+		});
 
 		return menu;
 	}

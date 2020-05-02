@@ -136,6 +136,10 @@ public class SingleBoardCommands implements ICommands {
 		return 0.;
 	}
 
+	public double getAmpMeterResistor() {
+		return 0;
+	}
+
 	public void ResetDevice() {
 		SetVoltageFall(0);
 		SetVoltageHeater(0);

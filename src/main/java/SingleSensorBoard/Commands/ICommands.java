@@ -38,6 +38,8 @@ public interface ICommands {
 
     public int getAmpMeterRange();
 
+    public double getAmpMeterResistor();
+
     public double getChamberHumidity();
 
     public double getChamberTemperature();

@@ -77,21 +77,28 @@ public class SimCommands implements ICommands {
 		return _VoltageHeater;
 	}
 
-	private boolean flagAutorangeAmpMeter = false;
+	private boolean flagAutorangeAmpMeter = true;
 
 	public void setAutorangeAmpMeter(boolean flag) { // todo
+		flagAutorangeAmpMeter = flag;
 	}
 
 	public boolean getAutorangeAmpMeter() {
 		return flagAutorangeAmpMeter;
 	}
 
+	private int _IndexRange = 0;
+
 	public void setAmpMeterRange(int IndexRange) { // todo
+		_IndexRange = IndexRange;
 	}
 
 	public int getAmpMeterRange() { // todo
-		int IndexRange = 0;
-		return IndexRange;
+		return _IndexRange;
+	}
+
+	public double getAmpMeterResistor() { // todo
+		return Math.pow(10, 2 + _IndexRange);
 	}
 
 	public double getChamberHumidity() { // todo
@@ -102,6 +109,11 @@ public class SimCommands implements ICommands {
 		return 0.;
 	}
 
-	public void ResetDevice() { // todo
+	public void ResetDevice() {
+		SetVoltageFall(0);
+		SetVoltageHeater(0);
+		setAutorangeAmpMeter(true);
+		setFeedbackExternal(false);
+		setSumInputWithExternalSignal(false);
 	}
 }
