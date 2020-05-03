@@ -244,6 +244,13 @@ public class SingleSensorBoard extends ChartFrame {
 	}
 
 	public void ResetUI() {
+		_heater.EraseData();
+		_voltAmpMeter.EraseData();
+		_ChamberHumidity.EraseData();
+		_ChamberTemperature.EraseData();
+		_ivCharacteristic.EraseData();
+		_itCharacteristic.EraseData();
+		_LRIVCharacteristic.EraseData();
 		_itCharacteristic.setFlagON(false);
 		_ivCharacteristic.setFlagON(false);
 		_heater.setFeedbakON(false);

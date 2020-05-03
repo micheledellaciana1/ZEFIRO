@@ -108,6 +108,7 @@ public class IVCharacteristic implements PropertyChangeListener {
 		for (SingleCharacteristic C : _oldCharacteristics)
 			C.clear();
 		_actualCharaceristic.clear();
+		_flagChangeVoltage = true;
 	}
 
 	public class SingleCharacteristic extends Vector<Point2D> {

@@ -2,43 +2,35 @@ package SingleSensorBoard.Menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
-import java.io.File;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.jfree.data.xy.XYDataset;
 
 import SingleSensorBoard.*;
 import SingleSensorBoard.Commands.ICommands;
 import core.ATask;
 import core.ChartFrame;
-import core.DataManager;
 import core.LoopManager;
+import core.MenuEditorChartFrame;
 import core.TaskManager;
 
-public class MenuEditorSingleSensorBoard {
+public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 	protected TaskManager _TM;
 	protected ICommands _commands;
-	protected ChartFrame _chart;
-	public boolean verbose = true;
 
 	public MenuEditorSingleSensorBoard(TaskManager TM, ICommands commands, ChartFrame chart) {
+		super(chart);
+
 		_TM = TM;
 		_commands = commands;
-		_chart = chart;
 	}
 
 	public JMenuBar constructMenuBar() {
@@ -194,6 +186,7 @@ public class MenuEditorSingleSensorBoard {
 		menu.add(BuildDisplayChamberMenu());
 		menu.add(BuildDisplayIVCharacteristic());
 		menu.add(BuildDisplayITCharacteristic());
+		menu.add(BuildDuplicateView());
 
 		return menu;
 	}
@@ -311,7 +304,6 @@ public class MenuEditorSingleSensorBoard {
 		});
 
 		menu.add(new ActionSetFeedbackParameters("Parameters", 5, 5, 1, 10, heater));
-		menu.add(BuildCalibrationHeaterMenu(heater));
 
 		return menu;
 	}
@@ -439,56 +431,11 @@ public class MenuEditorSingleSensorBoard {
 		return menu;
 	}
 
-	protected JMenuItem BuildExportTXT() {
-		JMenuItem menuItem = new JMenuItem(new AbstractAction("Export .txt") {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setFileFilter(new FileNameExtensionFilter(null, "txt"));
-				fileChooser.setDialogTitle("Save CSV");
-
-				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-					final File fileToSave = fileChooser.getSelectedFile();
-
-					_TM.addTask(new ATask() {
-						@Override
-						public void execution() {
-							XYDataset dataset = _chart.GetChartPanel().getChart().getXYPlot().getDataset();
-							DataManager DManager = new DataManager();
-
-							String XLabel = _chart.GetChartPanel().getChart().getXYPlot().getDomainAxis().getLabel();
-							String YLabel = _chart.GetChartPanel().getChart().getXYPlot().getRangeAxis().getLabel();
-
-							for (int i = 0; i < dataset.getSeriesCount(); i++) {
-
-								String labelColumnX = (dataset.getSeriesKey(i) + "_" + XLabel).replace(" ", "_");
-								String labelColumnY = (dataset.getSeriesKey(i) + "_" + YLabel).replace(" ", "_");
-
-								DManager.addColoumn(labelColumnX);
-								DManager.addColoumn(labelColumnY);
-
-								for (int j = 0; j < dataset.getItemCount(i); j++) {
-									DManager.add(labelColumnX, (double) dataset.getX(i, j));
-									DManager.add(labelColumnY, (double) dataset.getY(i, j));
-								}
-							}
-
-							DManager.save(fileToSave.getAbsolutePath());
-						}
-					});
-				}
-			}
-		});
-
-		return menuItem;
-	}
-
 	private JMenu BuildFileMenu() {
 		JMenu menu = new JMenu("File");
 
 		menu.add(BuildChartPropertyMenu());
-		menu.add(BuildExportTXT());
+		menu.add(BuildExportMenu());
 		menu.add(new AbstractAction("Reset") {
 
 			@Override
@@ -504,13 +451,6 @@ public class MenuEditorSingleSensorBoard {
 							switch (answer) {
 								case 0:
 									LoopManager.startingTime = System.currentTimeMillis();
-									SingleSensorBoard.getHeater().EraseData();
-									SingleSensorBoard.getVoltAmpMeter().EraseData();
-									SingleSensorBoard.getChamberHumidity().EraseData();
-									SingleSensorBoard.getChamberTemperature().EraseData();
-									SingleSensorBoard.getIVCharacteristic().EraseData();
-									SingleSensorBoard.getITCharacteristic().EraseData();
-									SingleSensorBoard.getLRIVCharacteristic().EraseData();
 									SingleSensorBoard.getInstance().ResetUI();
 									_commands.ResetDevice();
 									break;
@@ -555,29 +495,6 @@ public class MenuEditorSingleSensorBoard {
 								JOptionPane.INFORMATION_MESSAGE);
 					}
 				});
-			}
-		});
-
-		return menu;
-	}
-
-	protected JMenu BuildChartPropertyMenu() {
-		JMenu menu = new JMenu("Property Chart");
-
-		menu.add(new AbstractAction("FIFO scroll") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					String answer = JOptionPane.showInputDialog(
-							"Set dimension of domain window \n (to disable FIFO scroll enter a negative value):");
-					_chart.GetChartPanel().getChart().getXYPlot().getDomainAxis()
-							.setFixedAutoRange(Double.valueOf(answer));
-				} catch (Exception _e) {
-					if (verbose) {
-						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
-						_e.printStackTrace();
-					}
-				}
 			}
 		});
 

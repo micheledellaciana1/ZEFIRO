@@ -115,6 +115,7 @@ public class ITCharacteristic implements PropertyChangeListener {
 		for (SingleCharacteristic C : _oldCharacteristics)
 			C.clear();
 		_actualCharaceristic.clear();
+		_flagChangeTemperature = true;
 	}
 
 	public class SingleCharacteristic extends Vector<Point2D> {
