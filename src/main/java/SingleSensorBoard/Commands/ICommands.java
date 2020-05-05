@@ -2,13 +2,13 @@ package SingleSensorBoard.Commands;
 
 public interface ICommands {
 
-    public void initCommands();
-
     public void SetVoltageFall(double value);
 
     public double GetVoltageFall();
 
     public void setAverangeTimeADC(long value);
+
+    public long getAverangeTimeADC();
 
     public double measureVoltageFall();
 
@@ -45,4 +45,6 @@ public interface ICommands {
     public double getChamberTemperature();
 
     public void ResetDevice();
+
+    public void closeDevice();
 }

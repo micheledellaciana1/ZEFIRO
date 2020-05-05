@@ -13,10 +13,6 @@ public class SingleBoardCommands implements ICommands {
 	}
 
 	private SingleBoardCommands() {
-	}
-
-	@Override
-	public void initCommands() {
 		SerialPort port = SerialPort.getCommPorts()[0];
 		port.setBaudRate(230400);
 		_serial = new SerialBuffer(port);
@@ -26,23 +22,35 @@ public class SingleBoardCommands implements ICommands {
 		ResetDevice();
 	}
 
-	private double _VoltageFall = 0;
+	private double _VoltageFallSetted;
 
+	@Override
 	public void SetVoltageFall(double value) {
-		_VoltageFall = value;
+		_VoltageFallSetted = value;
 		_serial.println("ApplyVoltageFallEvent");
 		_serial.println(Double.toString(value));
 	}
 
+	@Override
 	public double GetVoltageFall() {
-		return _VoltageFall;
+		return _VoltageFallSetted;
 	}
 
+	private long _AvernageTimeADC;
+
+	@Override
 	public void setAverangeTimeADC(long value) {
+		_AvernageTimeADC = value;
 		_serial.println("EventAverangeTimeADC");
 		_serial.println(Long.toString(value));
 	}
 
+	@Override
+	public long getAverangeTimeADC() {
+		return _AvernageTimeADC;
+	}
+
+	@Override
 	public double measureVoltageFall() {
 		_serial.println("ReadVoltageFallEvent");
 		String VoltageFall = null;
@@ -51,6 +59,7 @@ public class SingleBoardCommands implements ICommands {
 		return Double.valueOf(VoltageFall);
 	}
 
+	@Override
 	public double measureCurrent() {
 		_serial.println("ReadCurrentEvent");
 		String Current = null;
@@ -61,36 +70,44 @@ public class SingleBoardCommands implements ICommands {
 
 	private boolean flagExternlFeedback = false;
 
+	@Override
 	public void setFeedbackExternal(boolean flag) { // todo
 		flagExternlFeedback = flag;
 	}
 
 	private boolean flagSumExternalSignal = false;
 
+	@Override
 	public void setSumInputWithExternalSignal(boolean flag) { // todo
 		flagSumExternalSignal = flag;
 	}
 
+	@Override
 	public boolean getFeedbackExternal() {
 		return flagExternlFeedback;
 	}
 
-	public boolean getSumInputWithExternalSignal() {
+	@Override
+	public boolean getSumInputWithExternalSignal() { // todo
 		return flagSumExternalSignal;
 	}
 
-	private double _VoltageHeater = 0;
+	private double _VoltageHeaterSetted;
 
+	@Override
 	public void SetVoltageHeater(double value) {
+		_VoltageHeaterSetted = value;
 		_serial.println("SetSupplyValueEvent");
 		_serial.println("0"); // todo
 		_serial.println(Double.toString(value));
 	}
 
+	@Override
 	public double GetVoltageHeater() {
-		return _VoltageHeater;
+		return _VoltageHeaterSetted;
 	}
 
+	@Override
 	public double measureResistanceHeater() {
 		_serial.println("MeasureValueResistorEvent");
 		_serial.println("0"); // todo
@@ -100,12 +117,14 @@ public class SingleBoardCommands implements ICommands {
 		return Double.valueOf(resistanceHeater);
 	}
 
+	@Override
 	public double measurePowerHeater() { // todo
-		return _VoltageHeater;
+		return 0;
 	}
 
 	private boolean flagAutorangeAmpMeter = false;
 
+	@Override
 	public void setAutorangeAmpMeter(boolean flag) {
 		flagAutorangeAmpMeter = flag;
 		if (flag)
@@ -114,37 +133,48 @@ public class SingleBoardCommands implements ICommands {
 			_serial.println("EventDisableAmpMeterCCAutoRange");
 	}
 
+	@Override
 	public boolean getAutorangeAmpMeter() {
 		return flagAutorangeAmpMeter;
 	}
 
+	@Override
 	public void setAmpMeterRange(int IndexRange) {
 		_serial.println("EventSelectResistance");
 		_serial.println(Integer.toString(IndexRange));
 	}
 
+	@Override
 	public int getAmpMeterRange() { // todo
 		int IndexRange = 0;
 		return IndexRange;
 	}
 
+	@Override
 	public double getChamberHumidity() { // todo
 		return 0.;
 	}
 
+	@Override
 	public double getChamberTemperature() { // todo
 		return 0.;
 	}
 
+	@Override
 	public double getAmpMeterResistor() {
 		return 0;
 	}
 
+	@Override
 	public void ResetDevice() {
 		SetVoltageFall(0);
 		SetVoltageHeater(0);
 		setAutorangeAmpMeter(true);
 		setFeedbackExternal(false);
 		setSumInputWithExternalSignal(false);
+	}
+
+	@Override
+	public void closeDevice() { // todo
 	}
 }

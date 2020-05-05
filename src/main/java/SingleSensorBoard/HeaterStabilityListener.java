@@ -1,6 +1,6 @@
 package SingleSensorBoard;
 
-import java.util.Vector;
+import java.util.AbstractList;
 
 import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
@@ -40,7 +40,7 @@ public class HeaterStabilityListener implements PropertyChangeListener {
         return false;
     }
 
-    private boolean TemperatureIsStable(Vector<Point2D> temperatures, int NPoints) {
+    private boolean TemperatureIsStable(AbstractList<Point2D> temperatures, int NPoints) {
         if (temperatures.size() < NPoints)
             return false;
 

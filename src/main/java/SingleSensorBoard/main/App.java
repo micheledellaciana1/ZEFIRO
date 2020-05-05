@@ -23,7 +23,7 @@ public class App {
         app.displayVoltageVsTime();
         app.setVisible(true);
 
-        SingleSensorBoard.getInstance().startUpdaterThread(30);
+        SingleSensorBoard.getInstance().startUpdaterThread();
 
         Thread t1 = new Thread(Manager);
         t1.start();

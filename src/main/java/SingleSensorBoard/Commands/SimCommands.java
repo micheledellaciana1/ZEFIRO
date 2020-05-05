@@ -1,5 +1,9 @@
 package SingleSensorBoard.Commands;
 
+/*
+Simulate a resistor with Resistance of 10 KOhm and heater with zero thermal mass
+*/
+
 public class SimCommands implements ICommands {
 	private static SimCommands _instance = new SimCommands();
 
@@ -10,110 +14,136 @@ public class SimCommands implements ICommands {
 	private SimCommands() {
 	}
 
+	private double _VoltageFallSetted = 0;
+
 	@Override
-	public void initCommands() {
+	public void SetVoltageFall(double value) {
+		_VoltageFallSetted = value;
 	}
 
-	private double _VoltageFall = 0;
-
-	public void SetVoltageFall(double value) { // todo
-		_VoltageFall = value;
-	}
-
+	@Override
 	public double GetVoltageFall() {
-		return _VoltageFall;
+		return _VoltageFallSetted;
 	}
 
-	public void setAverangeTimeADC(long value) { // todo
+	private long _AverangeTimeADC = 0;
+
+	@Override
+	public void setAverangeTimeADC(long value) {
+		_AverangeTimeADC = value;
 	}
 
-	public double measureVoltageFall() { // todo
-		return _VoltageFall + Math.random() * 0.01;
+	@Override
+	public long getAverangeTimeADC() {
+		return _AverangeTimeADC;
 	}
 
-	public double measureCurrent() { // todo
-		return _VoltageFall + Math.random() * 0.01;
+	@Override
+	public double measureVoltageFall() {
+		return _VoltageFallSetted + Math.random() * 0.05;
+	}
+
+	@Override
+	public double measureCurrent() {
+		return (_VoltageFallSetted + Math.random() * 0.05) / 10;
 	}
 
 	private boolean flagExternlFeedback = false;
 
-	public void setFeedbackExternal(boolean flag) { // todo
+	@Override
+	public void setFeedbackExternal(boolean flag) {
 		flagExternlFeedback = flag;
-
 	}
 
 	private boolean flagSumExternalSignal = false;
 
-	public void setSumInputWithExternalSignal(boolean flag) { // todo
+	@Override
+	public void setSumInputWithExternalSignal(boolean flag) {
 		flagSumExternalSignal = flag;
 	}
 
+	@Override
 	public boolean getFeedbackExternal() {
 		return flagExternlFeedback;
 	}
 
+	@Override
 	public boolean getSumInputWithExternalSignal() {
 		return flagSumExternalSignal;
 	}
 
-	private double _VoltageHeater = 0;
-	private double T0 = 0; // todo
+	private double _VoltageHeaterSetted = 0;
 
-	public void SetVoltageHeater(double value) { // todo
-		_VoltageHeater = value;
-		T0 = System.nanoTime();
+	@Override
+	public void SetVoltageHeater(double value) {
+		_VoltageHeaterSetted = value;
 	}
 
+	@Override
 	public double GetVoltageHeater() {
-		return _VoltageHeater;
+		return _VoltageHeaterSetted;
 	}
 
-	public double measureResistanceHeater() { // todo
-		double resistance = 0;
-		return 0.5 * _VoltageHeater * Math.exp(-1. / ((System.nanoTime() - T0) * 1e-5)) + 12 + Math.random() * 0.5;
+	@Override
+	public double measureResistanceHeater() {
+		return 0.1 * _VoltageHeaterSetted + Math.random() * 0.1 + 12;
 	}
 
-	public double measurePowerHeater() { // todo
-		return _VoltageHeater;
+	@Override
+	public double measurePowerHeater() {
+		return _VoltageHeaterSetted;
 	}
 
 	private boolean flagAutorangeAmpMeter = true;
 
-	public void setAutorangeAmpMeter(boolean flag) { // todo
+	@Override
+	public void setAutorangeAmpMeter(boolean flag) {
 		flagAutorangeAmpMeter = flag;
 	}
 
+	@Override
 	public boolean getAutorangeAmpMeter() {
 		return flagAutorangeAmpMeter;
 	}
 
 	private int _IndexRange = 0;
 
-	public void setAmpMeterRange(int IndexRange) { // todo
+	@Override
+	public void setAmpMeterRange(int IndexRange) {
 		_IndexRange = IndexRange;
 	}
 
-	public int getAmpMeterRange() { // todo
+	@Override
+	public int getAmpMeterRange() {
 		return _IndexRange;
 	}
 
-	public double getAmpMeterResistor() { // todo
+	@Override
+	public double getAmpMeterResistor() {
 		return Math.pow(10, 2 + _IndexRange);
 	}
 
-	public double getChamberHumidity() { // todo
-		return 0.;
+	@Override
+	public double getChamberHumidity() {
+		return 55 + Math.random() * 5;
 	}
 
+	@Override
 	public double getChamberTemperature() { // todo
-		return 0.;
+		return 24 + Math.random() * 0.1;
 	}
 
+	@Override
 	public void ResetDevice() {
 		SetVoltageFall(0);
 		SetVoltageHeater(0);
 		setAutorangeAmpMeter(true);
 		setFeedbackExternal(false);
 		setSumInputWithExternalSignal(false);
+	}
+
+	@Override
+	public void closeDevice() {
+		// TODO Auto-generated method stub
 	}
 }
