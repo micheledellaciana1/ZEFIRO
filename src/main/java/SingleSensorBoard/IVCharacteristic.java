@@ -28,6 +28,7 @@ public class IVCharacteristic implements PropertyChangeListener {
 	public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
 
 	public IVCharacteristic(ICommands Commands, ModeVoltAmpMeter voltAmpMeter) {
+
 		_oldCharacteristics = new ArrayList<SingleCharacteristic>();
 		_actualCharaceristic = new SingleCharacteristic();
 		_Commands = Commands;

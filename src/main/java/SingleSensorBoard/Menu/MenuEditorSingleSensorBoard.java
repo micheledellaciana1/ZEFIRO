@@ -319,9 +319,10 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		final AbstractAction action = new AbstractAction("ON") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				_ivCharacteristic.setFlagON(checkbox.getState());
 				if (checkbox.getState() == true)
 					_itCharacteristic.setFlagON(false);
+
+				_ivCharacteristic.setFlagON(checkbox.getState());
 			}
 		};
 
@@ -380,9 +381,10 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		final AbstractAction action = new AbstractAction("ON") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				_itCharacteristic.setFlagON(checkbox.getState());
 				if (checkbox.getState() == true)
 					_ivCharacteristic.setFlagON(false);
+
+				_itCharacteristic.setFlagON(checkbox.getState());
 			}
 		};
 
