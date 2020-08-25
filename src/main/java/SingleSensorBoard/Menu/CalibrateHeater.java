@@ -3,11 +3,15 @@ package SingleSensorBoard.Menu;
 import java.util.AbstractList;
 import java.util.ArrayList;
 
+import SingleSensorBoard.SingleSensorBoard;
+
 import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import SingleSensorBoard.ModeChamberTemperature;
 import SingleSensorBoard.ModeHeater;
-import SingleSensorBoard.Commands.ICommands;
+import SingleSensorBoard.Commands.HeaterCommands;
+import SingleSensorBoard.Commands.SingleBoardCommands;
 import core.ATask;
 import core.TaskManager;
 import core.themal.LookUpTable;
@@ -18,41 +22,49 @@ import java.beans.PropertyChangeListener;
 
 public class CalibrateHeater implements PropertyChangeListener {
 
-    private double _T0;
     private double _alpha;
     private double _beta;
     private ModeHeater _heater;
     private long _start;
+    private double _oldPeriod;
+    private ModeChamberTemperature _chamberTemperature;
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("FinishedLoop")) {
-            if (System.currentTimeMillis() - _start < 1000) {
+            if (System.currentTimeMillis() - _start < 2000) {
                 return;
             }
 
             ArrayList<Double> Resistance = new ArrayList<Double>();
             ArrayList<Double> Temperature = new ArrayList<Double>();
 
-            if (ValueIsStable(_heater.getResistance(), 100)) {
+            double T0 = _chamberTemperature.getData().lastElement().getY();
+
+            if (ValueIsStable(_heater.getResistance(), 10)) {
                 double heaterResistance = _heater.getResistance().lastElement().getY();
+
                 for (double T = 0; T < 2000; T += 0.1) {
-                    Resistance.add(heaterResistance * (1 + (T - _T0) * _alpha + (T - _T0) * (T - _T0) * _beta));
+                    Resistance.add(heaterResistance * (1 + (T - T0) * _alpha + (T - T0) * (T - T0) * _beta));
                     Temperature.add(T);
                 }
 
                 _heater.setLUT(new LookUpTable(Resistance, Temperature));
                 _heater.ChangeSupport.removePropertyChangeListener(this);
+                _heater.setPeriod(_oldPeriod);
             }
         }
     }
 
-    public CalibrateHeater(double T0, double alpha, double beta, final TaskManager TM, final ICommands commands,
-            final ModeHeater heater) {
-        _T0 = T0;
+    public CalibrateHeater(double alpha, double beta, final TaskManager TM, final HeaterCommands commands,
+            final ModeHeater heater, final ModeChamberTemperature chamberTemperature) {
+        _oldPeriod = heater.getMillisPeriod();
+        heater.setPeriod(2000);
+
         _alpha = alpha;
         _beta = beta;
         _heater = heater;
+        _chamberTemperature = chamberTemperature;
 
         TM.addTask(new ATask() {
             @Override

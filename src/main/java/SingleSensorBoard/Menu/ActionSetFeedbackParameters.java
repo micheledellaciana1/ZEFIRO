@@ -3,8 +3,6 @@ package SingleSensorBoard.Menu;
 import java.awt.event.ActionEvent;
 
 import java.awt.Component;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -18,12 +16,18 @@ import SingleSensorBoard.ModeHeater;
 
 public class ActionSetFeedbackParameters extends AbstractAction {
 
-    private JFrame _frame = new JFrame("FeedbackParameters");
+    private JFrame _frame;
     private JSlider _propSlider;
     private JSlider _integralSlider;
     private JSlider _derSlider;
     private JSlider _sensitivitySlider;
-    private int division = 1000;
+
+    private double _maxProp;
+    private double _maxIntegral;
+    private double _maxDer;
+    private double _maxSensitivity;
+
+    private int division = 10000;
 
     private ModeHeater _heater;
 
@@ -31,18 +35,19 @@ public class ActionSetFeedbackParameters extends AbstractAction {
             double maxSensitivity, ModeHeater heater) {
         super(name);
 
-        _frame = new JFrame("FeedbackParameter");
-        _propSlider = new JSlider(0, (int) (maxProp * division));
-        _integralSlider = new JSlider(0, (int) maxIntegral * division);
-        _derSlider = new JSlider(0, (int) maxDer * division);
-        _sensitivitySlider = new JSlider(0, (int) maxSensitivity * division);
+        _maxProp = maxProp;
+        _maxIntegral = maxIntegral;
+        _maxDer = maxDer;
+        _maxSensitivity = maxSensitivity;
+
+        _frame = new JFrame("FeedbackParameters");
+        _propSlider = new JSlider(0, (int) (division));
+        _integralSlider = new JSlider(0, (int) (division));
+        _derSlider = new JSlider(0, (int) (division));
+        _sensitivitySlider = new JSlider(0, (int) (division));
         _heater = heater;
 
-        _frame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                _frame.setVisible(false);
-            }
-        });
+        _frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JLabel _propSliderLabel = new JLabel("  Proportional");
         _propSliderLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -52,7 +57,7 @@ public class ActionSetFeedbackParameters extends AbstractAction {
         _propSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                _heater.getFeedBackController().setParameters(0, _propSlider.getValue() / (double) division);
+                _heater.getFeedBackController().setParameters(0, _propSlider.getValue() / (double) division * _maxProp);
             }
         });
 
@@ -64,7 +69,8 @@ public class ActionSetFeedbackParameters extends AbstractAction {
         _integralSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                _heater.getFeedBackController().setParameters(1, _integralSlider.getValue() / (double) division);
+                _heater.getFeedBackController().setParameters(1,
+                        _integralSlider.getValue() / (double) division * _maxIntegral);
             }
         });
 
@@ -76,7 +82,7 @@ public class ActionSetFeedbackParameters extends AbstractAction {
         _derSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                _heater.getFeedBackController().setParameters(2, _derSlider.getValue() / (double) division);
+                _heater.getFeedBackController().setParameters(2, _derSlider.getValue() / (double) division * _maxDer);
             }
         });
 
@@ -88,7 +94,8 @@ public class ActionSetFeedbackParameters extends AbstractAction {
         _sensitivitySlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                _heater.getFeedBackController().setParameters(3, _sensitivitySlider.getValue() / (double) division);
+                _heater.getFeedBackController().setParameters(3,
+                        _sensitivitySlider.getValue() / (double) division * _maxSensitivity);
             }
         });
 
@@ -114,10 +121,10 @@ public class ActionSetFeedbackParameters extends AbstractAction {
         double InitialValueDerivative = _heater.getFeedBackController().getParameters(2);
         double InitialValueSensitivity = _heater.getFeedBackController().getParameters(3);
 
-        _propSlider.setValue((int) (InitialValueProportional * division));
-        _integralSlider.setValue((int) (InitialValueIntegral * division));
-        _derSlider.setValue((int) (InitialValueDerivative * division));
-        _sensitivitySlider.setValue((int) (InitialValueSensitivity * division));
+        _propSlider.setValue((int) (division * (InitialValueProportional / _maxProp)));
+        _integralSlider.setValue((int) (division * (InitialValueIntegral / _maxIntegral)));
+        _derSlider.setValue((int) (division * (InitialValueDerivative / _maxDer)));
+        _sensitivitySlider.setValue((int) (division * (InitialValueSensitivity / _maxSensitivity)));
 
         _frame.setVisible(true);
     }

@@ -5,7 +5,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JOptionPane;
 
-import SingleSensorBoard.Commands.ICommands;
+import SingleSensorBoard.Commands.HeaterCommands;
 import SingleSensorBoard.ModeHeater;
 import core.ATask;
 import core.TaskManager;
@@ -15,11 +15,11 @@ public class PowerHeaterWatchDog implements PropertyChangeListener {
     private double _powerThreshold;
     private ModeHeater _heater;
     private TaskManager _TM;
-    private ICommands _Command;
+    private HeaterCommands _Command;
 
     public boolean flagOn = false;
 
-    public PowerHeaterWatchDog(ModeHeater heater, ICommands Command, TaskManager TM, double powerThreshold) {
+    public PowerHeaterWatchDog(ModeHeater heater, HeaterCommands Command, TaskManager TM, double powerThreshold) {
         _powerThreshold = powerThreshold;
         _heater = heater;
         _TM = TM;

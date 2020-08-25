@@ -2,15 +2,15 @@ package SingleSensorBoard;
 
 import java.util.*;
 
-import SingleSensorBoard.Commands.ICommands;
+import SingleSensorBoard.Commands.VoltAmpMeterCommands;
 import core.*;
 
 import java.awt.geom.Point2D;
 
 public class ModeVoltAmpMeter extends AMultipleDataStream {
-    private ICommands _Commands;
+    private VoltAmpMeterCommands _Commands;
 
-    public ModeVoltAmpMeter(String name, long period, ICommands Commands) {
+    public ModeVoltAmpMeter(String name, long period, VoltAmpMeterCommands Commands) {
         super(name, period, 3);
         _Commands = Commands;
     }
@@ -20,7 +20,9 @@ public class ModeVoltAmpMeter extends AMultipleDataStream {
         ArrayList<Double> data = new ArrayList<Double>();
         double voltage = _Commands.measureVoltageFall();
         double current = _Commands.measureCurrent();
-        double resistance = voltage / current;
+        double resistance = 0;
+        if (current != 0)
+            resistance = voltage / current;
 
         data.add(voltage);
         data.add(current);

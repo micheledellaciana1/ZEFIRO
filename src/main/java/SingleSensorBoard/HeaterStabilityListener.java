@@ -14,7 +14,7 @@ public class HeaterStabilityListener implements PropertyChangeListener {
 
     private ModeHeater _heater;
     private int _dimWindows;
-    private Boolean _heaterIsStable = null;
+
     public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
 
     public HeaterStabilityListener(ModeHeater Heater, int dimWindows) {
@@ -24,20 +24,20 @@ public class HeaterStabilityListener implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("FinishedLoop"))
-            if (readyToAcquire(_dimWindows)) {
-                ChangeSupport.firePropertyChange("HeaterChangedStability", _heaterIsStable, Boolean.TRUE);
-                _heaterIsStable = true;
-            } else {
-                ChangeSupport.firePropertyChange("HeaterChangedStability", _heaterIsStable, Boolean.FALSE);
-                _heaterIsStable = false;
+        if (ChangeSupport.getPropertyChangeListeners().length > 0)
+            if (evt.getPropertyName().equals("FinishedLoop")) {
+                if (readyToAcquire(_dimWindows)) {
+                    ChangeSupport.firePropertyChange("HeaterStability", null, Boolean.TRUE);
+                } else {
+                    ChangeSupport.firePropertyChange("HeaterStability", null, Boolean.FALSE);
+                }
             }
     }
 
     private boolean readyToAcquire(int NPoints) {
         if (TemperatureIsStable(_heater.getTemperature(), NPoints))
             return true;
-        return false;
+        return true;
     }
 
     private boolean TemperatureIsStable(AbstractList<Point2D> temperatures, int NPoints) {

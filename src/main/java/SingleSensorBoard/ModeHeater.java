@@ -3,7 +3,8 @@ package SingleSensorBoard;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import SingleSensorBoard.Commands.ICommands;
+import SingleSensorBoard.Commands.HeaterCommands;
+import SingleSensorBoard.Commands.HeaterCommands;
 
 import java.awt.geom.Point2D;
 
@@ -11,17 +12,20 @@ import core.*;
 import core.themal.*;
 
 public class ModeHeater extends AMultipleDataStream {
-    private FeedBackController_type1 _FBC;
-    private LookUpTable _LUT;
-    private boolean _feedbackON = false;
-    private ICommands _Commands;
+    protected FeedBackController_type1 _FBC;
+    protected LookUpTable _LUT;
+    protected boolean _feedbackON = false;
+    protected HeaterCommands _Commands;
 
-    public ModeHeater(String name, long period, ICommands Commands) {
-        super(name, period, 4);
+    public int NAverange = 8;
+
+    public ModeHeater(String name, long period, HeaterCommands Commands) {
+        super(name, period, 5);
         _Commands = Commands;
 
-        _FBC = new FeedBackController_type1(0.5, 0.5, 0, 2);
+        _FBC = new FeedBackController_type1(0.017, 0.005, 0, 0.25);
         _FBC.OnlyPositiveValue = true;
+        _FBC.MaxResponce = 3.3;
         _FBC.set_target_value(0);
     }
 
@@ -60,7 +64,13 @@ public class ModeHeater extends AMultipleDataStream {
     @Override
     public ArrayList<Double> acquireData() {
         ArrayList<Double> data = new ArrayList<Double>();
-        double resistance = _Commands.measureResistanceHeater();
+        double resistance = 0;
+
+        for (int i = 0; i < NAverange; i++) {
+            resistance += _Commands.measureResistanceHeater();
+        }
+
+        resistance /= NAverange;
         double Temperature;
 
         try {
@@ -75,6 +85,7 @@ public class ModeHeater extends AMultipleDataStream {
         data.add(resistance);
         data.add(power);
         data.add(_Commands.GetVoltageHeater());
+        data.add(_FBC.getTarget());
 
         if (_feedbackON) {
             try {
@@ -101,5 +112,9 @@ public class ModeHeater extends AMultipleDataStream {
 
     public Vector<Point2D> getVoltageHeater() {
         return _datas.get(3);
+    }
+
+    public Vector<Point2D> getTargetTemperature() {
+        return _datas.get(4);
     }
 }

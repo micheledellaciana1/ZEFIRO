@@ -4,8 +4,9 @@ import java.util.Vector;
 
 import org.jfree.chart.ChartPanel;
 
-import SingleSensorBoard.Commands.ICommands;
-import SingleSensorBoard.Commands.SimCommands;
+import java.awt.event.*;
+
+import SingleSensorBoard.Commands.SingleBoardCommands;
 import SingleSensorBoard.ListenerIVCharacteristic.LinearRegressionIVCharacteristic;
 import SingleSensorBoard.Menu.*;
 import SingleSensorBoard.WatchDog.PowerHeaterWatchDog;
@@ -17,7 +18,7 @@ public class SingleSensorBoard extends ChartFrame {
 
 	static private SingleSensorBoard _instance = new SingleSensorBoard(new ModChartPanel(), "SingleSensorBoard");
 	static private TaskManager _TMInstace;
-	static private ICommands _commands;
+	static private SingleBoardCommands _commands;
 	static private ModeVoltAmpMeter _voltAmpMeter;
 	static private ModeHeater _heater;
 	static private HeaterStabilityListener _heaterStability;
@@ -28,31 +29,45 @@ public class SingleSensorBoard extends ChartFrame {
 	static private PowerHeaterWatchDog _PHWatchDog;
 	static private ModeChamberHumidity _ChamberHumidity;
 	static private ModeChamberTemperature _ChamberTemperature;
+	static private DifferentialResistanceListener _differentialResistance;
 	static private MenuEditorSingleSensorBoard _MenuEditor;
 
 	private SingleSensorBoard(ChartPanel panel, String Title) {
 		super(panel, Title);
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				_TMInstace.addTask(new ATask() {
+					@Override
+					public void execution() {
+						ResetUI();
+						_commands.closeDevice();
+						System.exit(0);
+					}
+				});
+			}
+		});
 
 		_TMInstace = new TaskManager("TMSingleSensorBoard");
-		_commands = SimCommands.getInstance();
-		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 10, _commands);
-		_heater = new ModeHeater("Heater", 10, _commands);
-		_heaterStability = new HeaterStabilityListener(_heater, 50);
-		_VoltAmpStalibilty = new VoltAmpStabilityListener(_voltAmpMeter, 40);
-		_ivCharacteristic = new IVCharacteristic(_commands, _voltAmpMeter);
+		_commands = new SingleBoardCommands();
+		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 100, _commands.getVoltAmpMeterCommands());
+		_heater = new ModeHeater("Heater", 100, _commands.getHeaterCommands());
+		_heaterStability = new HeaterStabilityListener(_heater, 30);
+		_VoltAmpStalibilty = new VoltAmpStabilityListener(_voltAmpMeter, 30);
+		_ivCharacteristic = new IVCharacteristic(_commands.getVoltAmpMeterCommands(), _voltAmpMeter);
 		_itCharacteristic = new ITCharacteristic(_voltAmpMeter, _heater);
 		_LRIVCharacteristic = new LinearRegressionIVCharacteristic(_ivCharacteristic);
-		_PHWatchDog = new PowerHeaterWatchDog(_heater, _commands, _TMInstace, 0);
-		_ChamberHumidity = new ModeChamberHumidity(_commands, "ChamberHumidity", 500);
-		_ChamberTemperature = new ModeChamberTemperature(_commands, "ChamberTemperature", 500);
-		_MenuEditor = new MenuEditorSingleSensorBoard(_TMInstace, _commands, this);
+		_PHWatchDog = new PowerHeaterWatchDog(_heater, _commands.getHeaterCommands(), _TMInstace, 0);
+		_ChamberHumidity = new ModeChamberHumidity(_commands.getTempHumidityCommands(), "ChamberHumidity", 100);
+		_ChamberTemperature = new ModeChamberTemperature(_commands.getTempHumidityCommands(), "ChamberTemperature",
+				100);
+		_differentialResistance = new DifferentialResistanceListener(_commands.getVoltAmpMeterCommands(),
+				_voltAmpMeter);
+		_MenuEditor = new MenuEditorSingleSensorBoard(this, _commands.getHeaterCommands(),
+				_commands.getVoltAmpMeterCommands(), _commands.getTempHumidityCommands(), _commands, _TMInstace);
 
 		_heater.ChangeSupport.addPropertyChangeListener(_heaterStability);
 		_voltAmpMeter.ChangeSupport.addPropertyChangeListener(_VoltAmpStalibilty);
-
-		_VoltAmpStalibilty.ChangeSupport.addPropertyChangeListener(_ivCharacteristic);
-		_VoltAmpStalibilty.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
-		_heaterStability.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+		_voltAmpMeter.ChangeSupport.addPropertyChangeListener(_differentialResistance);
 
 		_heater.ChangeSupport.addPropertyChangeListener(_PHWatchDog);
 		_ivCharacteristic.ChangeSupport.addPropertyChangeListener(_LRIVCharacteristic);
@@ -70,7 +85,7 @@ public class SingleSensorBoard extends ChartFrame {
 		return _TMInstace;
 	}
 
-	static public ICommands getCommands() {
+	static public SingleBoardCommands getCommands() {
 		return _commands;
 	}
 
@@ -80,6 +95,10 @@ public class SingleSensorBoard extends ChartFrame {
 
 	static public ModeHeater getHeater() {
 		return _heater;
+	}
+
+	static public DifferentialResistanceListener getDifferentialResistanceListener() {
+		return _differentialResistance;
 	}
 
 	static public IVCharacteristic getIVCharacteristic() {
@@ -116,6 +135,13 @@ public class SingleSensorBoard extends ChartFrame {
 
 	static public VoltAmpStabilityListener getVoltAmpStabilityListener() {
 		return _VoltAmpStalibilty;
+	}
+
+	public void displayDifferentialResistanceVsTime() {
+		clearData();
+		addSeries(_differentialResistance.getDifferentialResitance(), "Diff. Resistance");
+		_panel.getChart().getXYPlot().getDomainAxis().setLabel("Time [S]");
+		_panel.getChart().getXYPlot().getRangeAxis().setLabel("Diff. Resistance [KOhm]");
 	}
 
 	public void displayVoltageVsTime() {
@@ -185,7 +211,7 @@ public class SingleSensorBoard extends ChartFrame {
 		clearData();
 		addSeries(_LRIVCharacteristic.getSlope(), "Slope linear Regression IV Characteristic");
 		_panel.getChart().getXYPlot().getDomainAxis().setLabel("Time [S]");
-		_panel.getChart().getXYPlot().getRangeAxis().setLabel("Slope [KOhm]");
+		_panel.getChart().getXYPlot().getRangeAxis().setLabel("Slope [1/KOhm]");
 	}
 
 	public void displayInterceptLinearRegressionIVCharacteristic() {
@@ -243,6 +269,17 @@ public class SingleSensorBoard extends ChartFrame {
 		_panel.getChart().getXYPlot().getRangeAxis().setLabel("Current [mA]");
 	}
 
+	public void clearEveryChart() {
+		_heater.EraseData();
+		_voltAmpMeter.EraseData();
+		_ChamberHumidity.EraseData();
+		_ChamberTemperature.EraseData();
+		_ivCharacteristic.EraseData();
+		_itCharacteristic.EraseData();
+		_LRIVCharacteristic.EraseData();
+		_differentialResistance.EraseData();
+	}
+
 	public void ResetUI() {
 		_heater.EraseData();
 		_voltAmpMeter.EraseData();
@@ -251,6 +288,8 @@ public class SingleSensorBoard extends ChartFrame {
 		_ivCharacteristic.EraseData();
 		_itCharacteristic.EraseData();
 		_LRIVCharacteristic.EraseData();
+		_differentialResistance.EraseData();
+		_differentialResistance.setFlagON(false);
 		_itCharacteristic.setFlagON(false);
 		_ivCharacteristic.setFlagON(false);
 		_heater.setFeedbakON(false);

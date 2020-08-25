@@ -18,8 +18,8 @@ public class ITCharacteristic implements PropertyChangeListener {
 	private int _MarkPlaceTPATH = 0;
 	private boolean _flagChangeTemperature = true;
 
-	private boolean _VoltAmpIsStable;
 	private boolean _heaterIsStable;
+	private boolean _voltAmpIsStable;
 
 	private ModeVoltAmpMeter _voltAmpMeter;
 	private ModeHeater _heater;
@@ -63,13 +63,13 @@ public class ITCharacteristic implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("HeaterChangedStability"))
-			_VoltAmpIsStable = (boolean) evt.getNewValue();
-
-		if (evt.getPropertyName().equals("HeaterChangedStability"))
+		if (evt.getPropertyName().equals("HeaterStability"))
 			_heaterIsStable = (boolean) evt.getNewValue();
 
-		if (_flagON && _heater.getFeedbakON() && _heater.getFeedbakON()) {
+		if (evt.getPropertyName().equals("VoltAmpStability"))
+			_voltAmpIsStable = (boolean) evt.getNewValue();
+
+		if (_flagON && _heater.getFeedbakON()) {
 			try {
 				if (_flagChangeTemperature) {
 					_heater.setTargetTemperature(_TPATH.get(_MarkPlaceTPATH));
@@ -78,10 +78,10 @@ public class ITCharacteristic implements PropertyChangeListener {
 					return;
 				}
 
-				if (System.currentTimeMillis() - _timeChangedTemperature < 1000)
-					return;
+				if (_heaterIsStable && _voltAmpIsStable) {
+					if (System.currentTimeMillis() - _timeChangedTemperature < 1000)
+						return;
 
-				if (_VoltAmpIsStable && _heaterIsStable) {
 					double Temperature = _heater.getTemperature().lastElement().getY();
 					double Current = _voltAmpMeter.getCurrent().lastElement().getY();
 					_actualCharaceristic.add(new Point2D.Double(Temperature, Current));

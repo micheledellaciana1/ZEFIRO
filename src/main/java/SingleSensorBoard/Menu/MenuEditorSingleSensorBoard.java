@@ -14,7 +14,10 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import SingleSensorBoard.*;
-import SingleSensorBoard.Commands.ICommands;
+import SingleSensorBoard.Commands.HeaterCommands;
+import SingleSensorBoard.Commands.SingleBoardCommands;
+import SingleSensorBoard.Commands.TempHumidityCommands;
+import SingleSensorBoard.Commands.VoltAmpMeterCommands;
 import core.ATask;
 import core.ChartFrame;
 import core.LoopManager;
@@ -23,14 +26,20 @@ import core.TaskManager;
 
 public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
+	protected HeaterCommands _HeaterCommands;
+	protected VoltAmpMeterCommands _VoltAmpMeterCommands;
+	protected TempHumidityCommands _TempHumidityCommands;
+	protected SingleBoardCommands _SingleBoardCommands;
 	protected TaskManager _TM;
-	protected ICommands _commands;
 
-	public MenuEditorSingleSensorBoard(TaskManager TM, ICommands commands, ChartFrame chart) {
+	public MenuEditorSingleSensorBoard(ChartFrame chart, HeaterCommands HCommands, VoltAmpMeterCommands VACommands,
+			TempHumidityCommands THCommands, SingleBoardCommands SBCommands, TaskManager TM) {
 		super(chart);
-
+		_HeaterCommands = HCommands;
+		_VoltAmpMeterCommands = VACommands;
+		_TempHumidityCommands = THCommands;
+		_SingleBoardCommands = SBCommands;
 		_TM = TM;
-		_commands = commands;
 	}
 
 	public JMenuBar constructMenuBar() {
@@ -42,7 +51,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		return menu;
 	}
 
-	private JMenu BuildDisplayMenuMeasurment() {
+	protected JMenu BuildDisplayMenuMeasurment() {
 		JMenu menu = new JMenu("Meausurement");
 
 		menu.add(new AbstractAction("Voltage") {
@@ -69,7 +78,19 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		return menu;
 	}
 
-	private JMenu BuildDisplayIVCharacteristic() {
+	protected JMenu BuildDiffResistance() {
+		JMenu menu = new JMenu("Diff. Resistance");
+		menu.add(new AbstractAction("Diff. Resistance") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SingleSensorBoard.getInstance().displayDifferentialResistanceVsTime();
+			}
+		});
+
+		return menu;
+	}
+
+	protected JMenu BuildDisplayIVCharacteristic() {
 		JMenu menu = new JMenu("IV-Characteristic>");
 
 		menu.add(new AbstractAction("Characteristic") {
@@ -103,7 +124,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		return menu;
 	}
 
-	private JMenu BuildDisplayITCharacteristic() {
+	protected JMenu BuildDisplayITCharacteristic() {
 		JMenu menu = new JMenu("IT-Characteristic>");
 
 		menu.add(new AbstractAction("Characteristic") {
@@ -123,7 +144,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		return menu;
 	}
 
-	private JMenu BuildDisplayMenuHeater() {
+	protected JMenu BuildDisplayMenuHeater() {
 		JMenu menu = new JMenu("Heater");
 
 		menu.add(new AbstractAction("Temperature") {
@@ -158,7 +179,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 	}
 
-	private JMenu BuildDisplayChamberMenu() {
+	protected JMenu BuildDisplayChamberMenu() {
 		JMenu menu = new JMenu("Chamber");
 
 		menu.add(new AbstractAction("Temperature") {
@@ -178,7 +199,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		return menu;
 	}
 
-	private JMenu BuildDisplayMenu() {
+	protected JMenu BuildDisplayMenu() {
 		JMenu menu = new JMenu("Display");
 
 		menu.add(BuildDisplayMenuMeasurment());
@@ -186,23 +207,25 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		menu.add(BuildDisplayChamberMenu());
 		menu.add(BuildDisplayIVCharacteristic());
 		menu.add(BuildDisplayITCharacteristic());
+		menu.add(BuildDiffResistance());
 		menu.add(BuildDuplicateView());
 
 		return menu;
 	}
 
-	private JMenu BuildSetMenu() {
+	protected JMenu BuildSetMenu() {
 		JMenu menu = new JMenu("Set");
 
 		menu.add(BuildSetMenuMeasurment());
 		menu.add(BuildSetMenuHeater(SingleSensorBoard.getHeater()));
 		menu.add(BuildSetMenuIVCharacteristic());
 		menu.add(BuildSetMenuITCharacteristic());
+		menu.add(BuildSetMenuDiffResistance());
 
 		return menu;
 	}
 
-	private JMenu BuildSetMenuMeasurment() {
+	protected JMenu BuildSetMenuMeasurment() {
 		JMenu menu = new JMenu("Measurement");
 
 		menu.add(new AbstractAction("Voltage fall") {
@@ -213,7 +236,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 					@Override
 					public void execution() {
 						try {
-							_commands.SetVoltageFall(Double.valueOf(answer));
+							_VoltAmpMeterCommands.SetVoltageFall(Double.valueOf(answer));
 						} catch (Exception _e) {
 							if (verbose) {
 								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -253,7 +276,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 					@Override
 					public void execution() {
 						try {
-							_commands.SetVoltageHeater(Double.valueOf(answer));
+							_HeaterCommands.SetVoltageHeater(Double.valueOf(answer));
 						} catch (Exception _e) {
 							if (verbose) {
 								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -303,14 +326,18 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			}
 		});
 
-		menu.add(new ActionSetFeedbackParameters("Parameters", 5, 5, 1, 10, heater));
+		menu.add(new ActionSetFeedbackParameters("Parameters", heater.getFeedBackController().getParameters(0) * 10,
+				heater.getFeedBackController().getParameters(1) * 10,
+				heater.getFeedBackController().getParameters(2) * 10,
+				heater.getFeedBackController().getParameters(3) * 10, heater));
 
 		return menu;
 	}
 
-	private JMenu BuildSetMenuIVCharacteristic() {
+	protected JMenu BuildSetMenuIVCharacteristic() {
 		final IVCharacteristic _ivCharacteristic = SingleSensorBoard.getIVCharacteristic();
-		final ITCharacteristic _itCharacteristic = SingleSensorBoard.getITCharacteristic();
+		final DifferentialResistanceListener _diffRes = SingleSensorBoard.getDifferentialResistanceListener();
+		final VoltAmpStabilityListener _VoltAmpStabilityListener = SingleSensorBoard.getVoltAmpStabilityListener();
 
 		JMenu menu = new JMenu("IV-Characteristic");
 
@@ -319,8 +346,14 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		final AbstractAction action = new AbstractAction("ON") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (checkbox.getState() == true)
-					_itCharacteristic.setFlagON(false);
+				if (checkbox.getState() == true) {
+					// remove listeners of ivCharacteristic
+					_diffRes.setFlagON(false);
+					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_diffRes);
+					_VoltAmpStabilityListener.ChangeSupport.addPropertyChangeListener(_ivCharacteristic);
+				} else {
+					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_ivCharacteristic);
+				}
 
 				_ivCharacteristic.setFlagON(checkbox.getState());
 			}
@@ -371,9 +404,80 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		return menu;
 	}
 
-	private JMenu BuildSetMenuITCharacteristic() {
+	protected JMenu BuildSetMenuDiffResistance() {
 		final IVCharacteristic _ivCharacteristic = SingleSensorBoard.getIVCharacteristic();
+		final DifferentialResistanceListener _diffRes = SingleSensorBoard.getDifferentialResistanceListener();
+		final VoltAmpStabilityListener _VoltAmpStabilityListener = SingleSensorBoard.getVoltAmpStabilityListener();
+
+		JMenu menu = new JMenu("Diff. Resistance");
+
+		// Add feedbackOnOffs
+		final JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem();
+		final AbstractAction action = new AbstractAction("ON") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (checkbox.getState() == true) {
+					// remove listeners of ivCharacteristic
+					_ivCharacteristic.setFlagON(false);
+					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_ivCharacteristic);
+					//
+					_VoltAmpStabilityListener.ChangeSupport.addPropertyChangeListener(_diffRes);
+				} else {
+					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_diffRes);
+				}
+
+				_diffRes.setFlagON(checkbox.getState());
+			}
+		};
+
+		checkbox.setAction(action);
+		menu.add(checkbox);
+
+		// Add a MenuListener that check the status off checkbox when menu is selected
+		menu.addMenuListener(new MenuListener() {
+			@Override
+			public void menuSelected(MenuEvent e) {
+				if (checkbox.getState() != _diffRes.getFlagON())
+					checkbox.setState(_diffRes.getFlagON());
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e) {
+			}
+
+			@Override
+			public void menuCanceled(MenuEvent e) {
+			}
+		});
+
+		menu.add(new AbstractAction("Voltage Increment") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final String answer = JOptionPane.showInputDialog("Set Voltage increment: <Voltage increment>");
+				_TM.addTask(new ATask() {
+					@Override
+					public void execution() {
+						try {
+							_diffRes.setVoltageIncrement(Double.valueOf(answer));
+						} catch (Exception _e) {
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
+						}
+					}
+				});
+			}
+		});
+
+		return menu;
+	}
+
+	protected JMenu BuildSetMenuITCharacteristic() {
 		final ITCharacteristic _itCharacteristic = SingleSensorBoard.getITCharacteristic();
+		final HeaterStabilityListener _HeaterStabilityListener = SingleSensorBoard.getHeaterStabilityListener();
+		final VoltAmpStabilityListener _VoltAmpStabilityListener = SingleSensorBoard.getVoltAmpStabilityListener();
+
 		JMenu menu = new JMenu("IT-Characteristic");
 
 		// Add feedbackOnOff
@@ -381,8 +485,13 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		final AbstractAction action = new AbstractAction("ON") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (checkbox.getState() == true)
-					_ivCharacteristic.setFlagON(false);
+				if (checkbox.getState() == true) {
+					_HeaterStabilityListener.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+					_VoltAmpStabilityListener.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+				} else {
+					_HeaterStabilityListener.ChangeSupport.removePropertyChangeListener(_itCharacteristic);
+					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_itCharacteristic);
+				}
 
 				_itCharacteristic.setFlagON(checkbox.getState());
 			}
@@ -433,11 +542,41 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		return menu;
 	}
 
-	private JMenu BuildFileMenu() {
+	protected JMenu BuildFileMenu() {
 		JMenu menu = new JMenu("File");
 
 		menu.add(BuildChartPropertyMenu());
 		menu.add(BuildExportMenu());
+
+		menu.add(new AbstractAction("Clear Chart") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_TM.addTask(new ATask() {
+
+					@Override
+					public void execution() {
+						int answer = JOptionPane.showConfirmDialog(null, "Are you sure to erase all data?", "Clean all",
+								JOptionPane.YES_NO_OPTION);
+						try {
+							switch (answer) {
+								case 0:
+									LoopManager.startingTime = System.currentTimeMillis();
+									SingleSensorBoard.getInstance().clearEveryChart();
+									break;
+								case 1:
+									break;
+							}
+						} catch (Exception _e) {
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
+						}
+					}
+				});
+			}
+		});
+
 		menu.add(new AbstractAction("Reset") {
 
 			@Override
@@ -454,7 +593,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 								case 0:
 									LoopManager.startingTime = System.currentTimeMillis();
 									SingleSensorBoard.getInstance().ResetUI();
-									_commands.ResetDevice();
+									_SingleBoardCommands.Reset();
 									break;
 								case 1:
 									break;
@@ -485,16 +624,19 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 								+ Boolean.toString(SingleSensorBoard.getHeater().getFeedbakON()) + "\n"
 								+ "Setted temperature: "
 								+ Double.toString(SingleSensorBoard.getHeater().getFeedBackController().getTarget())
-								+ " °C" + "\n" + "Setted voltage Fall: " + Double.toString(_commands.GetVoltageFall())
-								+ " [V]" + "\n" + "Setted voltage heater: "
-								+ Double.toString(_commands.GetVoltageHeater()) + " [a.u]" + "\n" + "Ext. Feedback: "
-								+ Boolean.toString(_commands.getFeedbackExternal()) + "\n" + "Bias with ext.: "
-								+ Boolean.toString(_commands.getSumInputWithExternalSignal()) + "\n"
-								+ "Amp. meter autorange: " + Boolean.toString(_commands.getAutorangeAmpMeter()) + "\n"
-								+ "Amp. meter range: " + Integer.toString(_commands.getAmpMeterRange()) + "\n"
-								+ "Amp. meter ref. Resistor: "
-								+ Double.toString(_commands.getAmpMeterResistor() / 1000.) + "[kOhm]", "Settings",
-								JOptionPane.INFORMATION_MESSAGE);
+								+ " °C" + "\n" + "Setted voltage Fall: "
+								+ Double.toString(_VoltAmpMeterCommands.GetVoltageFall()) + " [V]" + "\n"
+								+ "Setted voltage heater: " + Double.toString(_HeaterCommands.GetVoltageHeater())
+								+ " [a.u]" + "\n" + "Ext. Feedback: "
+								+ Boolean.toString(_SingleBoardCommands.getFeedbackExternal()) + "\n"
+								+ "Bias with ext.: "
+								+ Boolean.toString(_SingleBoardCommands.getSumInputWithExternalSignal()) + "\n"
+								+ "Amp. meter autorange: "
+								+ Boolean.toString(_VoltAmpMeterCommands.getAutorangeAmpMeter()) + "\n"
+								+ "Amp. meter range: " + Integer.toString(_VoltAmpMeterCommands.getAmpMeterRange())
+								+ "\n" + "Amp. meter ref. Resistor: "
+								+ Double.toString(_VoltAmpMeterCommands.getAmpMeterResistor() / 1000.) + "[kOhm]",
+								"Settings", JOptionPane.INFORMATION_MESSAGE);
 					}
 				});
 			}
@@ -506,6 +648,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 	protected JMenu BuildAdvancedMenu() {
 		JMenu menu = new JMenu("Advanced");
 		menu.add(BuildAmpMeterMenu());
+		menu.add(BuildADCMenu());
 
 		final JCheckBoxMenuItem checkboxExtFeedback = new JCheckBoxMenuItem();
 		final AbstractAction actionExtFeedback = new AbstractAction("Ext. Feedback") {
@@ -514,7 +657,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
-						_commands.setFeedbackExternal(checkboxExtFeedback.getState());
+						_SingleBoardCommands.setFeedbackExternal(checkboxExtFeedback.getState());
 					}
 				});
 			}
@@ -530,7 +673,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
-						_commands.setSumInputWithExternalSignal(checkboxSumExternalSignal.getState());
+						_SingleBoardCommands.setSumInputWithExternalSignal(checkboxSumExternalSignal.getState());
 					}
 				});
 			}
@@ -543,11 +686,11 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		menu.addMenuListener(new MenuListener() {
 			@Override
 			public void menuSelected(MenuEvent e) {
-				if (checkboxExtFeedback.getState() != _commands.getFeedbackExternal())
-					checkboxExtFeedback.setState(_commands.getFeedbackExternal());
+				if (checkboxExtFeedback.getState() != _SingleBoardCommands.getFeedbackExternal())
+					checkboxExtFeedback.setState(_SingleBoardCommands.getFeedbackExternal());
 
-				if (checkboxSumExternalSignal.getState() != _commands.getSumInputWithExternalSignal())
-					checkboxSumExternalSignal.setState(_commands.getSumInputWithExternalSignal());
+				if (checkboxSumExternalSignal.getState() != _SingleBoardCommands.getSumInputWithExternalSignal())
+					checkboxSumExternalSignal.setState(_SingleBoardCommands.getSumInputWithExternalSignal());
 			}
 
 			@Override
@@ -573,7 +716,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
-						_commands.setAutorangeAmpMeter(checkBox.getState());
+						_VoltAmpMeterCommands.setAutorangeAmpMeter(checkBox.getState());
 					}
 				});
 			}
@@ -587,7 +730,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
-						checkBox.setState(_commands.getAutorangeAmpMeter());
+						checkBox.setState(_VoltAmpMeterCommands.getAutorangeAmpMeter());
 					}
 				});
 			}
@@ -609,7 +752,32 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 					@Override
 					public void execution() {
 						try {
-							_commands.setAmpMeterRange(Integer.valueOf(answer));
+							_VoltAmpMeterCommands.setAmpMeterRange(Integer.valueOf(answer));
+						} catch (Exception _e) {
+							if (verbose) {
+								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+								_e.printStackTrace();
+							}
+						}
+					}
+				});
+			}
+		});
+
+		return menu;
+	}
+
+	protected JMenu BuildADCMenu() {
+		JMenu menu = new JMenu("ADC");
+		menu.add(new AbstractAction("Set Averange time ADC") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final String answer = JOptionPane.showInputDialog(null, "Set Averange time ADC (ms)");
+				_TM.addTask(new ATask() {
+					@Override
+					public void execution() {
+						try {
+							_VoltAmpMeterCommands.setAverangeTimeADC(Integer.valueOf(answer));
 						} catch (Exception _e) {
 							if (verbose) {
 								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -658,11 +826,11 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		JMenuItem item = new JMenuItem(new AbstractAction("Calibrate heater") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String answer = JOptionPane.showInputDialog(null, "Enter calibration parameters: <T0> <alpha> <beta>");
+				String answer = JOptionPane.showInputDialog(null, "Enter calibration parameters: <alpha> <beta>");
 				try {
 					String values[] = answer.split(" ");
-					CalibrateHeater c = new CalibrateHeater(Double.valueOf(values[0]), Double.valueOf(values[1]),
-							Double.valueOf(values[2]), _TM, _commands, heater);
+					CalibrateHeater c = new CalibrateHeater(Double.valueOf(values[0]), Double.valueOf(values[1]), _TM,
+							_HeaterCommands, heater, SingleSensorBoard.getChamberTemperature());
 					JOptionPane.showMessageDialog(null, "Calibrating...", "Calibration",
 							JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception _e) {

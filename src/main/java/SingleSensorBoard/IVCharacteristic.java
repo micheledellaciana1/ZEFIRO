@@ -8,7 +8,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-import SingleSensorBoard.Commands.ICommands;
+import SingleSensorBoard.Commands.VoltAmpMeterCommands;
 
 public class IVCharacteristic implements PropertyChangeListener {
 
@@ -20,14 +20,14 @@ public class IVCharacteristic implements PropertyChangeListener {
 	private int _MarkPlaceVPATH = 0;
 	private boolean _flagChangeVoltage = true;
 	private boolean _VoltAmpIsStable;
-	private ICommands _Commands;
+	private VoltAmpMeterCommands _Commands;
 	private ModeVoltAmpMeter _voltAmpMeter;
 
 	private long _timeChangedVoltageFall;
 
 	public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
 
-	public IVCharacteristic(ICommands Commands, ModeVoltAmpMeter voltAmpMeter) {
+	public IVCharacteristic(VoltAmpMeterCommands Commands, ModeVoltAmpMeter voltAmpMeter) {
 
 		_oldCharacteristics = new ArrayList<SingleCharacteristic>();
 		_actualCharaceristic = new SingleCharacteristic();
@@ -63,7 +63,7 @@ public class IVCharacteristic implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("VoltAmpChangedStability"))
+		if (evt.getPropertyName().equals("VoltAmpStability"))
 			_VoltAmpIsStable = (boolean) evt.getNewValue();
 
 		if (_flagON && _VoltAmpIsStable)
@@ -75,12 +75,12 @@ public class IVCharacteristic implements PropertyChangeListener {
 					return;
 				}
 
-				if (System.currentTimeMillis() - _timeChangedVoltageFall < 100)
+				if (System.currentTimeMillis() - _timeChangedVoltageFall < 500)
 					return;
 
 				double VoltageFall = _voltAmpMeter.getVoltage().lastElement().getY();
 				double Current = _voltAmpMeter.getCurrent().lastElement().getY();
-				_actualCharaceristic.add(new Point2D.Double(Current, VoltageFall));
+				_actualCharaceristic.add(new Point2D.Double(VoltageFall, Current));
 				_flagChangeVoltage = true;
 				_MarkPlaceVPATH++;
 

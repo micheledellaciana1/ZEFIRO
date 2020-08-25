@@ -1,13 +1,13 @@
 package SingleSensorBoard;
 
-import SingleSensorBoard.Commands.ICommands;
+import SingleSensorBoard.Commands.TempHumidityCommands;
 import core.ADataStream;
 
 public class ModeChamberHumidity extends ADataStream {
 
-    private ICommands _Commands;
+    private TempHumidityCommands _Commands;
 
-    public ModeChamberHumidity(ICommands Commands, String name, double period) {
+    public ModeChamberHumidity(TempHumidityCommands Commands, String name, double period) {
         super(name, period);
         _Commands = Commands;
     }

@@ -27,7 +27,7 @@ public class LinearRegressionIVCharacteristic implements PropertyChangeListener 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("FinishedIVCharacteristic")) {
-            float time = System.currentTimeMillis() - LoopManager.startingTime;
+            float time = (float) ((System.currentTimeMillis() - LoopManager.startingTime) * 0.001);
 
             SimpleRegression RO = new SimpleRegression(true);
             for (int i = 0; i < _ivCharacteristic.getActualCharacteristic().size(); i++)
@@ -38,6 +38,9 @@ public class LinearRegressionIVCharacteristic implements PropertyChangeListener 
 
             _datas.get(0).add(new Point2D.Double(time, result.getParameterEstimate(0)));
             _datas.get(1).add(new Point2D.Double(time, result.getParameterEstimate(1)));
+
+            System.out.println(result.getParameterEstimate(0));
+            System.out.println(result.getParameterEstimate(1));
         }
     }
 

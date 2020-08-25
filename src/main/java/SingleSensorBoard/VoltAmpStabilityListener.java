@@ -14,7 +14,7 @@ public class VoltAmpStabilityListener implements PropertyChangeListener {
 
     private ModeVoltAmpMeter _voltAmpMeter;
     private int _dimWIndows;
-    private Boolean _VoltAmpIsStable = null;
+
     public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
 
     public VoltAmpStabilityListener(ModeVoltAmpMeter voltAmpMeter, int dimWIndows) {
@@ -22,17 +22,20 @@ public class VoltAmpStabilityListener implements PropertyChangeListener {
         _voltAmpMeter = voltAmpMeter;
     }
 
+    public void setdimWindows(int dimWIndows) {
+        _dimWIndows = dimWIndows;
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("FinishedLoop")) {
-            if (readyToAcquire(_dimWIndows)) {
-                ChangeSupport.firePropertyChange("VoltAmpChangedStability", _VoltAmpIsStable, Boolean.TRUE);
-                _VoltAmpIsStable = true;
-            } else {
-                ChangeSupport.firePropertyChange("VoltAmpChangedStability", _VoltAmpIsStable, Boolean.FALSE);
-                _VoltAmpIsStable = false;
+        if (ChangeSupport.getPropertyChangeListeners().length > 0)
+            if (evt.getPropertyName().equals("FinishedLoop")) {
+                if (readyToAcquire(_dimWIndows)) {
+                    ChangeSupport.firePropertyChange("VoltAmpStability", null, Boolean.TRUE);
+                } else {
+                    ChangeSupport.firePropertyChange("VoltAmpStability", null, Boolean.FALSE);
+                }
             }
-        }
     }
 
     private boolean readyToAcquire(int NPoints) {
@@ -40,7 +43,7 @@ public class VoltAmpStabilityListener implements PropertyChangeListener {
             if (ValueIsStable(_voltAmpMeter.getVoltage(), NPoints))
                 if (ValueIsStable(_voltAmpMeter.getCurrent(), NPoints))
                     return true;
-        return false;
+        return true;
     }
 
     private boolean ValueIsStable(AbstractList<Point2D> values, int NPoints) {
