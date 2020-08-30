@@ -21,8 +21,6 @@ public class SingleSensorBoard extends ChartFrame {
 	static private SingleBoardCommands _commands;
 	static private ModeVoltAmpMeter _voltAmpMeter;
 	static private ModeHeater _heater;
-	static private HeaterStabilityListener _heaterStability;
-	static private VoltAmpStabilityListener _VoltAmpStalibilty;
 	static private IVCharacteristic _ivCharacteristic;
 	static private ITCharacteristic _itCharacteristic;
 	static private LinearRegressionIVCharacteristic _LRIVCharacteristic;
@@ -51,8 +49,6 @@ public class SingleSensorBoard extends ChartFrame {
 		_commands = new SingleBoardCommands();
 		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 100, _commands.getVoltAmpMeterCommands());
 		_heater = new ModeHeater("Heater", 100, _commands.getHeaterCommands());
-		_heaterStability = new HeaterStabilityListener(_heater, 30);
-		_VoltAmpStalibilty = new VoltAmpStabilityListener(_voltAmpMeter, 30);
 		_ivCharacteristic = new IVCharacteristic(_commands.getVoltAmpMeterCommands(), _voltAmpMeter);
 		_itCharacteristic = new ITCharacteristic(_voltAmpMeter, _heater);
 		_LRIVCharacteristic = new LinearRegressionIVCharacteristic(_ivCharacteristic);
@@ -65,12 +61,10 @@ public class SingleSensorBoard extends ChartFrame {
 		_MenuEditor = new MenuEditorSingleSensorBoard(this, _commands.getHeaterCommands(),
 				_commands.getVoltAmpMeterCommands(), _commands.getTempHumidityCommands(), _commands, _TMInstace);
 
-		_heater.ChangeSupport.addPropertyChangeListener(_heaterStability);
-		_voltAmpMeter.ChangeSupport.addPropertyChangeListener(_VoltAmpStalibilty);
-		_voltAmpMeter.ChangeSupport.addPropertyChangeListener(_differentialResistance);
-
 		_heater.ChangeSupport.addPropertyChangeListener(_PHWatchDog);
 		_ivCharacteristic.ChangeSupport.addPropertyChangeListener(_LRIVCharacteristic);
+
+		_commands.Reset();
 	}
 
 	public void buildMenuBar() {
@@ -129,14 +123,6 @@ public class SingleSensorBoard extends ChartFrame {
 		return _MenuEditor;
 	}
 
-	static public HeaterStabilityListener getHeaterStabilityListener() {
-		return _heaterStability;
-	}
-
-	static public VoltAmpStabilityListener getVoltAmpStabilityListener() {
-		return _VoltAmpStalibilty;
-	}
-
 	public void displayDifferentialResistanceVsTime() {
 		clearData();
 		addSeries(_differentialResistance.getDifferentialResitance(), "Diff. Resistance");
@@ -168,6 +154,7 @@ public class SingleSensorBoard extends ChartFrame {
 	public void displayTemperatureVsTime() {
 		clearData();
 		addSeries(_heater.getTemperature(), "Temperature");
+		addSeries(_heater.getTargetTemperature(), "Target Temperature");
 		_panel.getChart().getXYPlot().getDomainAxis().setLabel("Time [S]");
 		_panel.getChart().getXYPlot().getRangeAxis().setLabel("Temperature [°C]");
 	}

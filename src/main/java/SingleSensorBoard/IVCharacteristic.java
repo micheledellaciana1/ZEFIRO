@@ -19,9 +19,10 @@ public class IVCharacteristic implements PropertyChangeListener {
 	private ArrayList<Double> _VPATH;
 	private int _MarkPlaceVPATH = 0;
 	private boolean _flagChangeVoltage = true;
-	private boolean _VoltAmpIsStable;
+
 	private VoltAmpMeterCommands _Commands;
 	private ModeVoltAmpMeter _voltAmpMeter;
+	public int millisDelay = 1000;
 
 	private long _timeChangedVoltageFall;
 
@@ -63,10 +64,8 @@ public class IVCharacteristic implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("VoltAmpStability"))
-			_VoltAmpIsStable = (boolean) evt.getNewValue();
 
-		if (_flagON && _VoltAmpIsStable)
+		if (_flagON && evt.getPropertyName().equals("FinishedLoop"))
 			try {
 				if (_flagChangeVoltage) {
 					_Commands.SetVoltageFall(_VPATH.get(_MarkPlaceVPATH));
@@ -75,7 +74,7 @@ public class IVCharacteristic implements PropertyChangeListener {
 					return;
 				}
 
-				if (System.currentTimeMillis() - _timeChangedVoltageFall < 500)
+				if (System.currentTimeMillis() - _timeChangedVoltageFall < millisDelay)
 					return;
 
 				double VoltageFall = _voltAmpMeter.getVoltage().lastElement().getY();

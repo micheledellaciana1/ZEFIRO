@@ -39,8 +39,8 @@ public class LinearRegressionIVCharacteristic implements PropertyChangeListener 
             _datas.get(0).add(new Point2D.Double(time, result.getParameterEstimate(0)));
             _datas.get(1).add(new Point2D.Double(time, result.getParameterEstimate(1)));
 
-            System.out.println(result.getParameterEstimate(0));
-            System.out.println(result.getParameterEstimate(1));
+            // System.out.println(result.getParameterEstimate(0));
+            // System.out.println(result.getParameterEstimate(1));
         }
     }
 

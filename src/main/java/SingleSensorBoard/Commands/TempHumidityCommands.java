@@ -10,7 +10,7 @@ public class TempHumidityCommands extends ACommands {
 
     public double getChamberHumidity() {
         if (isASimulation)
-            return 0;
+            return 0 + Math.random() * 0.1;;
         _serial.println("EventMeasureRHChamber");
         String ChamberHumidity = null;
         while (ChamberHumidity == null)
@@ -20,7 +20,7 @@ public class TempHumidityCommands extends ACommands {
 
     public double getChamberTemperature() {
         if (isASimulation)
-            return 0;
+            return 0 + Math.random() * 0.1;;
 
         _serial.println("EventMeasureBoardTemperature");
         String ChamberTemperature = null;

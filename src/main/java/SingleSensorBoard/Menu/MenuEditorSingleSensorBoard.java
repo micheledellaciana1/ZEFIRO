@@ -40,6 +40,8 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		_TempHumidityCommands = THCommands;
 		_SingleBoardCommands = SBCommands;
 		_TM = TM;
+
+		verbose = false;
 	}
 
 	public JMenuBar constructMenuBar() {
@@ -337,11 +339,9 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 	protected JMenu BuildSetMenuIVCharacteristic() {
 		final IVCharacteristic _ivCharacteristic = SingleSensorBoard.getIVCharacteristic();
 		final DifferentialResistanceListener _diffRes = SingleSensorBoard.getDifferentialResistanceListener();
-		final VoltAmpStabilityListener _VoltAmpStabilityListener = SingleSensorBoard.getVoltAmpStabilityListener();
 
 		JMenu menu = new JMenu("IV-Characteristic");
 
-		// Add feedbackOnOff
 		final JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem();
 		final AbstractAction action = new AbstractAction("ON") {
 			@Override
@@ -349,10 +349,10 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 				if (checkbox.getState() == true) {
 					// remove listeners of ivCharacteristic
 					_diffRes.setFlagON(false);
-					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_diffRes);
-					_VoltAmpStabilityListener.ChangeSupport.addPropertyChangeListener(_ivCharacteristic);
+					SingleSensorBoard.getVoltAmpMeter().ChangeSupport.removePropertyChangeListener(_diffRes);
+					SingleSensorBoard.getVoltAmpMeter().ChangeSupport.addPropertyChangeListener(_ivCharacteristic);
 				} else {
-					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_ivCharacteristic);
+					SingleSensorBoard.getVoltAmpMeter().ChangeSupport.removePropertyChangeListener(_ivCharacteristic);
 				}
 
 				_ivCharacteristic.setFlagON(checkbox.getState());
@@ -401,13 +401,27 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			}
 		});
 
+		menu.add(new AbstractAction("Delay between changing") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String answer = JOptionPane.showInputDialog("Set delay between changing voltage in milliseconds");
+				try {
+					_ivCharacteristic.millisDelay = Integer.valueOf(answer);
+				} catch (Exception _e) {
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
+				}
+			}
+		});
+
 		return menu;
 	}
 
 	protected JMenu BuildSetMenuDiffResistance() {
 		final IVCharacteristic _ivCharacteristic = SingleSensorBoard.getIVCharacteristic();
 		final DifferentialResistanceListener _diffRes = SingleSensorBoard.getDifferentialResistanceListener();
-		final VoltAmpStabilityListener _VoltAmpStabilityListener = SingleSensorBoard.getVoltAmpStabilityListener();
 
 		JMenu menu = new JMenu("Diff. Resistance");
 
@@ -417,13 +431,11 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (checkbox.getState() == true) {
-					// remove listeners of ivCharacteristic
 					_ivCharacteristic.setFlagON(false);
-					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_ivCharacteristic);
-					//
-					_VoltAmpStabilityListener.ChangeSupport.addPropertyChangeListener(_diffRes);
+					SingleSensorBoard.getVoltAmpMeter().ChangeSupport.removePropertyChangeListener(_ivCharacteristic);
+					SingleSensorBoard.getVoltAmpMeter().ChangeSupport.addPropertyChangeListener(_diffRes);
 				} else {
-					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_diffRes);
+					SingleSensorBoard.getVoltAmpMeter().ChangeSupport.removePropertyChangeListener(_diffRes);
 				}
 
 				_diffRes.setFlagON(checkbox.getState());
@@ -470,13 +482,26 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			}
 		});
 
+		menu.add(new AbstractAction("Delay between changing") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String answer = JOptionPane.showInputDialog("Set delay between changing voltage in milliseconds");
+				try {
+					_diffRes.millisDelay = Integer.valueOf(answer);
+				} catch (Exception _e) {
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
+				}
+			}
+		});
+
 		return menu;
 	}
 
 	protected JMenu BuildSetMenuITCharacteristic() {
 		final ITCharacteristic _itCharacteristic = SingleSensorBoard.getITCharacteristic();
-		final HeaterStabilityListener _HeaterStabilityListener = SingleSensorBoard.getHeaterStabilityListener();
-		final VoltAmpStabilityListener _VoltAmpStabilityListener = SingleSensorBoard.getVoltAmpStabilityListener();
 
 		JMenu menu = new JMenu("IT-Characteristic");
 
@@ -486,11 +511,15 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (checkbox.getState() == true) {
-					_HeaterStabilityListener.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
-					_VoltAmpStabilityListener.ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+					if (!SingleSensorBoard.getHeater().getFeedbakON()) {
+						JOptionPane.showMessageDialog(null, "Heater feedback activated", "Feedback issue",
+								JOptionPane.WARNING_MESSAGE);
+						SingleSensorBoard.getHeater().setFeedbakON(true);
+					}
+
+					SingleSensorBoard.getHeater().ChangeSupport.addPropertyChangeListener(_itCharacteristic);
 				} else {
-					_HeaterStabilityListener.ChangeSupport.removePropertyChangeListener(_itCharacteristic);
-					_VoltAmpStabilityListener.ChangeSupport.removePropertyChangeListener(_itCharacteristic);
+					SingleSensorBoard.getHeater().ChangeSupport.removePropertyChangeListener(_itCharacteristic);
 				}
 
 				_itCharacteristic.setFlagON(checkbox.getState());
@@ -536,6 +565,21 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 						}
 					}
 				});
+			}
+		});
+
+		menu.add(new AbstractAction("Delay between changing") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String answer = JOptionPane.showInputDialog("Set delay between changing temperature in milliseconds");
+				try {
+					_itCharacteristic.millisDelay = Integer.valueOf(answer);
+				} catch (Exception _e) {
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
+				}
 			}
 		});
 
@@ -796,6 +840,22 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		JMenu menu = new JMenu("Calibration");
 
 		menu.add(BuildCalibrationHeaterMenuItem(heater));
+		menu.add(new AbstractAction("Calibrate allumina substrate (alpha = 0.003263, beta = -6.6668e-7)") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					CalibrateHeater c = new CalibrateHeater(0.003263, -6.6668e-7, _TM, _HeaterCommands, heater,
+							SingleSensorBoard.getChamberTemperature());
+					JOptionPane.showMessageDialog(null, "Calibrating...", "Calibration",
+							JOptionPane.INFORMATION_MESSAGE);
+				} catch (Exception _e) {
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
+					}
+				}
+			}
+		});
 		menu.add(new AbstractAction("Display") {
 
 			@Override
@@ -844,4 +904,5 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 		return item;
 	}
+
 }

@@ -18,12 +18,10 @@ public class ITCharacteristic implements PropertyChangeListener {
 	private int _MarkPlaceTPATH = 0;
 	private boolean _flagChangeTemperature = true;
 
-	private boolean _heaterIsStable;
-	private boolean _voltAmpIsStable;
-
 	private ModeVoltAmpMeter _voltAmpMeter;
 	private ModeHeater _heater;
 	private long _timeChangedTemperature;
+	public int millisDelay = 1000;
 
 	public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
 
@@ -63,13 +61,7 @@ public class ITCharacteristic implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("HeaterStability"))
-			_heaterIsStable = (boolean) evt.getNewValue();
-
-		if (evt.getPropertyName().equals("VoltAmpStability"))
-			_voltAmpIsStable = (boolean) evt.getNewValue();
-
-		if (_flagON && _heater.getFeedbakON()) {
+		if (_flagON && _heater.getFeedbakON() && evt.getPropertyName().equals("FinishedLoop"))
 			try {
 				if (_flagChangeTemperature) {
 					_heater.setTargetTemperature(_TPATH.get(_MarkPlaceTPATH));
@@ -78,29 +70,27 @@ public class ITCharacteristic implements PropertyChangeListener {
 					return;
 				}
 
-				if (_heaterIsStable && _voltAmpIsStable) {
-					if (System.currentTimeMillis() - _timeChangedTemperature < 1000)
-						return;
+				if (System.currentTimeMillis() - _timeChangedTemperature < millisDelay)
+					return;
 
-					double Temperature = _heater.getTemperature().lastElement().getY();
-					double Current = _voltAmpMeter.getCurrent().lastElement().getY();
-					_actualCharaceristic.add(new Point2D.Double(Temperature, Current));
-					_flagChangeTemperature = true;
-					_MarkPlaceTPATH++;
+				double Temperature = _heater.getTemperature().lastElement().getY();
+				double Current = _voltAmpMeter.getCurrent().lastElement().getY();
+				_actualCharaceristic.add(new Point2D.Double(Temperature, Current));
+				_flagChangeTemperature = true;
+				_MarkPlaceTPATH++;
 
-					if (_MarkPlaceTPATH > _TPATH.size() - 1) {
-						_MarkPlaceTPATH = 0;
-						_oldCharacteristics.add(new SingleCharacteristic(_actualCharaceristic));
+				if (_MarkPlaceTPATH > _TPATH.size() - 1) {
+					_MarkPlaceTPATH = 0;
+					_oldCharacteristics.add(new SingleCharacteristic(_actualCharaceristic));
 
-						ChangeSupport.firePropertyChange("FinishedITCharacteristic", null, null);
-						_actualCharaceristic.clear();
-					}
+					ChangeSupport.firePropertyChange("FinishedITCharacteristic", null, null);
+					_actualCharaceristic.clear();
 				}
+			} catch (
 
-			} catch (Exception e) {
+			Exception e) {
 				e.printStackTrace();
 			}
-		}
 	}
 
 	public SingleCharacteristic getActualCharacteristic() {

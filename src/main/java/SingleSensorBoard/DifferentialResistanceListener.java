@@ -23,10 +23,10 @@ public class DifferentialResistanceListener implements PropertyChangeListener {
     private double _previousCurrent = 0;
 
     private boolean _flagChangeVoltage = true;
-    private boolean _VoltAmpIsStable;
+
     private VoltAmpMeterCommands _Commands;
     private ModeVoltAmpMeter _voltAmpMeter;
-
+    public int millisDelay = 1000;
     private long _timeChangedVoltageFall;
 
     public PropertyChangeSupport ChangeSupport = new PropertyChangeSupport(this);
@@ -54,10 +54,7 @@ public class DifferentialResistanceListener implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("VoltAmpStability"))
-            _VoltAmpIsStable = (boolean) evt.getNewValue();
-
-        if (_flagON && _VoltAmpIsStable)
+        if (_flagON && evt.getPropertyName().equals("FinishedLoop"))
             try {
                 if (_flagChangeVoltage) {
                     _Commands.SetVoltageFall(_Commands.GetVoltageFall() + _VoltageIncrement);
@@ -67,7 +64,7 @@ public class DifferentialResistanceListener implements PropertyChangeListener {
                     return;
                 }
 
-                if (System.currentTimeMillis() - _timeChangedVoltageFall < 300)
+                if (System.currentTimeMillis() - _timeChangedVoltageFall < millisDelay)
                     return;
 
                 float time = (float) ((System.currentTimeMillis() - LoopManager.startingTime) * 0.001);

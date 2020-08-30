@@ -40,7 +40,7 @@ public class VoltAmpMeterCommands extends ACommands {
 
     public double measureVoltageFall() {
         if (isASimulation)
-            return _VoltageFallSetted;
+            return _VoltageFallSetted + Math.random() * 0.1;
 
         _serial.println("ReadVoltageFallEvent");
         String VoltageFall = null;
@@ -51,7 +51,7 @@ public class VoltAmpMeterCommands extends ACommands {
 
     public double measureCurrent() {
         if (isASimulation)
-            return _VoltageFallSetted;
+            return _VoltageFallSetted + Math.random() * 0.1;
 
         _serial.println("ReadCurrentEvent");
         String Current = null;
