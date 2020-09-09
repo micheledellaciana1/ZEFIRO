@@ -16,6 +16,8 @@ public class ModeHeater extends AMultipleDataStream {
     protected LookUpTable _LUT;
     protected boolean _feedbackON = false;
     protected HeaterCommands _Commands;
+    protected long _timeLastCallFeedback;
+    public long checkTimeFeedback = 500;
 
     public int NAverange = 8;
 
@@ -88,10 +90,13 @@ public class ModeHeater extends AMultipleDataStream {
         data.add(_FBC.getTarget());
 
         if (_feedbackON) {
-            try {
-                double responce = _FBC.responce(Temperature);
-                _Commands.SetVoltageHeater(responce);
-            } catch (Exception e) {
+            if (System.currentTimeMillis() - _timeLastCallFeedback > checkTimeFeedback) {
+                _timeLastCallFeedback = System.currentTimeMillis();
+                try {
+                    double responce = _FBC.responce(Temperature);
+                    _Commands.SetVoltageHeater(responce);
+                } catch (Exception e) {
+                }
             }
         }
 
