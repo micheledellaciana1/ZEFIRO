@@ -12,10 +12,10 @@
         },
         {
             "type": "java",
-            "name": "Debug (Launch)-App<SingleSensorBoard>",
+            "name": "Debug (Launch)-App<SingleSensorBoard_V2>",
             "request": "launch",
-            "mainClass": "SingleSensorBoard.App",
-            "projectName": "SingleSensorBoard"
+            "mainClass": "SingleSensorBoard.main.App",
+            "projectName": "SingleSensorBoard_V2"
         }
     ]
 }

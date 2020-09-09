@@ -2,24 +2,29 @@ package SingleSensorBoard.Menu;
 
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
+import java.io.File;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import SingleSensorBoard.*;
 import SingleSensorBoard.Commands.HeaterCommands;
 import SingleSensorBoard.Commands.SingleBoardCommands;
 import SingleSensorBoard.Commands.TempHumidityCommands;
 import SingleSensorBoard.Commands.VoltAmpMeterCommands;
+import SingleSensorBoard.ListenerIVCharacteristic.LinearRegressionIVCharacteristic;
 import core.ATask;
 import core.ChartFrame;
+import core.DataManager;
 import core.LoopManager;
 import core.MenuEditorChartFrame;
 import core.TaskManager;
@@ -128,6 +133,13 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 	protected JMenu BuildDisplayITCharacteristic() {
 		JMenu menu = new JMenu("IT-Characteristic>");
+
+		menu.add(new AbstractAction("Arrenius Plot") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SingleSensorBoard.getInstance().displayArreniusPlot();
+			}
+		});
 
 		menu.add(new AbstractAction("Characteristic") {
 			@Override
@@ -343,7 +355,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		JMenu menu = new JMenu("IV-Characteristic");
 
 		final JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem();
-		final AbstractAction action = new AbstractAction("ON") {
+		checkbox.setAction(new AbstractAction("ON") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (checkbox.getState() == true) {
@@ -357,10 +369,19 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 				_ivCharacteristic.setFlagON(checkbox.getState());
 			}
-		};
+		});
 
-		checkbox.setAction(action);
 		menu.add(checkbox);
+
+		final JCheckBoxMenuItem checkboxCountinousRamping = new JCheckBoxMenuItem();
+		checkboxCountinousRamping.setAction(new AbstractAction("Continous Ramping") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_ivCharacteristic.setCountinousRamping(checkboxCountinousRamping.getState());
+			}
+		});
+
+		menu.add(checkboxCountinousRamping);
 
 		// Add a MenuListener that check the status off checkbox when menu is selected
 		menu.addMenuListener(new MenuListener() {
@@ -368,6 +389,8 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			public void menuSelected(MenuEvent e) {
 				if (checkbox.getState() != _ivCharacteristic.getFlagON())
 					checkbox.setState(_ivCharacteristic.getFlagON());
+				if (checkboxCountinousRamping.getState() != _ivCharacteristic.getCountinousRamping())
+					checkboxCountinousRamping.setState(_ivCharacteristic.getCountinousRamping());
 			}
 
 			@Override
@@ -382,7 +405,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		menu.add(new AbstractAction("Voltage Range") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final String answer = JOptionPane.showInputDialog("Set Voltage Range: <Min> <Max> <Step>");
+				final String answer = JOptionPane.showInputDialog("Set Voltage Range: <Start> <Finish> <Step>");
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
@@ -529,12 +552,24 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		checkbox.setAction(action);
 		menu.add(checkbox);
 
+		final JCheckBoxMenuItem checkboxCountinousRamping = new JCheckBoxMenuItem();
+		checkboxCountinousRamping.setAction(new AbstractAction("Continous Ramping") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_itCharacteristic.setCountinousRamping(checkboxCountinousRamping.getState());
+			}
+		});
+
+		menu.add(checkboxCountinousRamping);
+
 		// Add a MenuListener that check the status off checkbox when menu is selected
 		menu.addMenuListener(new MenuListener() {
 			@Override
 			public void menuSelected(MenuEvent e) {
 				if (checkbox.getState() != _itCharacteristic.getFlagON())
 					checkbox.setState(_itCharacteristic.getFlagON());
+				if (checkbox.getState() != _itCharacteristic.getCountinousRamping())
+					checkbox.setState(_itCharacteristic.getCountinousRamping());
 			}
 
 			@Override
@@ -549,7 +584,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		menu.add(new AbstractAction("Temperature Range") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final String answer = JOptionPane.showInputDialog("Set Temperature Range: <Min> <Max> <Step>");
+				final String answer = JOptionPane.showInputDialog("Set Temperature Range: <Start> <Finish> <Step>");
 				_TM.addTask(new ATask() {
 					@Override
 					public void execution() {
@@ -584,6 +619,61 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		});
 
 		return menu;
+	}
+
+	@Override
+	public JMenu BuildExportMenu() {
+		JMenu menu = super.BuildExportMenu();
+		menu.add(BuildExportEveryData());
+		return menu;
+	}
+
+	public JMenuItem BuildExportEveryData() {
+		JMenuItem menuItem = new JMenuItem(new AbstractAction("Export Every Data") {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileFilter(new FileNameExtensionFilter(".txt", "txt"));
+				fileChooser.setDialogTitle("Save");
+
+				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+					File fileToSave = fileChooser.getSelectedFile();
+
+					DataManager dm = new DataManager();
+					ModeChamberHumidity MCH = SingleSensorBoard.getChamberHumidity();
+					dm = addDataToDataManager(dm, MCH.getData(), "Time_[S]", "Humidity_[%]");
+					ModeChamberTemperature MCT = SingleSensorBoard.getChamberTemperature();
+					dm = addDataToDataManager(dm, MCT.getData(), "Time_[S]", "Temperature_Chamber_[°C]");
+					ModeHeater MH = SingleSensorBoard.getHeater();
+					dm = addDataToDataManager(dm, MH.getTemperature(), "Time_[S]", "Temperature_Sensor_[°C]");
+					dm = addDataToDataManager(dm, MH.getResistance(), "Time_[S]", "Resistance_Heater_[Ohm]");
+					dm = addDataToDataManager(dm, MH.getTargetTemperature(), "Time_[S]",
+							"Target_Temperature_Sensor_[°C]");
+					dm = addDataToDataManager(dm, MH.getVoltageHeater(), "Time_[S]", "Voltage_Heater_[au]");
+					dm = addDataToDataManager(dm, MH.getPower(), "Time_[S]", "Power_Heater_[au]");
+					ModeVoltAmpMeter MVAM = SingleSensorBoard.getVoltAmpMeter();
+					dm = addDataToDataManager(dm, MVAM.getVoltage(), "Time_[S]", "Voltage_Sensor_[V]");
+					dm = addDataToDataManager(dm, MVAM.getCurrent(), "Time_[S]", "Current_Sensor_[V]");
+					dm = addDataToDataManager(dm, MVAM.getResistance(), "Time_[S]", "Resistance_Sensor_[KOhm]");
+					DifferentialResistanceListener DRL = SingleSensorBoard.getDifferentialResistanceListener();
+					dm = addDataToDataManager(dm, DRL.getDifferentialResitance(), "Time_[S]",
+							"Differential_Resistance_Sensor_[KOhm]");
+					IVCharacteristic IVC = SingleSensorBoard.getIVCharacteristic();
+					dm = addDataToDataManager(dm, IVC.getActualCharacteristic(), "Voltate_[V]", "Current_[mA]");
+					ITCharacteristic ITC = SingleSensorBoard.getITCharacteristic();
+					dm = addDataToDataManager(dm, ITC.getActualCharacteristic(), "Temperature_[°C]", "Current [mA]");
+					dm = addDataToDataManager(dm, ITC.getActualArreniusPlot(), "1/Temperature_[1/°C]", "Current [mA]");
+					LinearRegressionIVCharacteristic LRIVC = SingleSensorBoard.getLRIVCharacteristic();
+					dm = addDataToDataManager(dm, LRIVC.getSlope(), "Time_[S]", "Slope_[1/Kohm]");
+					dm = addDataToDataManager(dm, LRIVC.getIntercept(), "Time_[S]", "Intercept_[1/Kohm]");
+
+					dm.save(fileToSave.getAbsolutePath());
+				}
+			}
+		});
+
+		return menuItem;
 	}
 
 	protected JMenu BuildFileMenu() {

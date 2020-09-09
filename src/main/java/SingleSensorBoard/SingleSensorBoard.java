@@ -3,7 +3,6 @@ package SingleSensorBoard;
 import java.util.Vector;
 
 import org.jfree.chart.ChartPanel;
-
 import java.awt.event.*;
 
 import SingleSensorBoard.Commands.SingleBoardCommands;
@@ -16,7 +15,7 @@ import java.awt.geom.Point2D;
 
 public class SingleSensorBoard extends ChartFrame {
 
-	static private SingleSensorBoard _instance = new SingleSensorBoard(new ModChartPanel(), "SingleSensorBoard");
+	static private SingleSensorBoard _instance = new SingleSensorBoard(new ModChartPanel(), "ZEFIRO");
 	static private TaskManager _TMInstace;
 	static private SingleBoardCommands _commands;
 	static private ModeVoltAmpMeter _voltAmpMeter;
@@ -47,7 +46,7 @@ public class SingleSensorBoard extends ChartFrame {
 
 		_TMInstace = new TaskManager("TMSingleSensorBoard");
 		_commands = new SingleBoardCommands();
-		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 0, _commands.getVoltAmpMeterCommands());
+		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 10, _commands.getVoltAmpMeterCommands());
 		_heater = new ModeHeater("Heater", 100, _commands.getHeaterCommands());
 		_ivCharacteristic = new IVCharacteristic(_commands.getVoltAmpMeterCommands(), _voltAmpMeter);
 		_itCharacteristic = new ITCharacteristic(_voltAmpMeter, _heater);
@@ -236,6 +235,13 @@ public class SingleSensorBoard extends ChartFrame {
 		clearData();
 		addSeries(_itCharacteristic.getActualCharacteristic(), "ITCharacteristic");
 		_panel.getChart().getXYPlot().getDomainAxis().setLabel("Temperature [°C]");
+		_panel.getChart().getXYPlot().getRangeAxis().setLabel("Current [mA]");
+	}
+
+	public void displayArreniusPlot() {
+		clearData();
+		addSeries(_itCharacteristic.getActualArreniusPlot(), "ArreniusPlot");
+		_panel.getChart().getXYPlot().getDomainAxis().setLabel("1/Temperature [1/°C]");
 		_panel.getChart().getXYPlot().getRangeAxis().setLabel("Current [mA]");
 	}
 

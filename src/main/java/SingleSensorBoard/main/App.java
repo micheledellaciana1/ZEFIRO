@@ -14,9 +14,9 @@ public class App {
 
         Manager.add_mode(SingleSensorBoard.getTaskManager());
         Manager.add_mode(SingleSensorBoard.getVoltAmpMeter());
-        // Manager.add_mode(SingleSensorBoard.getHeater());
-        // Manager.add_mode(SingleSensorBoard.getChamberHumidity());
-        // Manager.add_mode(SingleSensorBoard.getChamberTemperature());
+        Manager.add_mode(SingleSensorBoard.getHeater());
+        Manager.add_mode(SingleSensorBoard.getChamberHumidity());
+        Manager.add_mode(SingleSensorBoard.getChamberTemperature());
 
         SingleSensorBoard app = SingleSensorBoard.getInstance();
         app.buildMenuBar();
@@ -26,6 +26,8 @@ public class App {
         SingleSensorBoard.getInstance().startUpdaterThread();
 
         Thread t1 = new Thread(Manager);
+
+        LoopManager.startingTime = System.currentTimeMillis();
         t1.start();
     }
 }

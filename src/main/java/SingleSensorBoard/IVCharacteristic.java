@@ -13,6 +13,7 @@ import SingleSensorBoard.Commands.VoltAmpMeterCommands;
 public class IVCharacteristic implements PropertyChangeListener {
 
 	private boolean _flagON = false;
+	private boolean _continousRamping = false;
 	private ArrayList<SingleCharacteristic> _oldCharacteristics;
 	private SingleCharacteristic _actualCharaceristic;
 
@@ -38,24 +39,47 @@ public class IVCharacteristic implements PropertyChangeListener {
 		define_VPATH(-5, 5, 1);
 	}
 
-	public void define_VPATH(double VMin, double VMax, double dV) {
-		if (VMax > VMin && dV > 0) {
+	public void define_VPATH(double VStart, double VFinish, double dV) {
+		if ((VFinish - VStart) * dV > 0) {
 			_VPATH = new ArrayList<Double>();
 			_MarkPlaceVPATH = 0;
 			_actualCharaceristic.clear();
 			_flagChangeVoltage = true;
 
-			for (double V = VMin; V <= VMax; V += dV)
-				_VPATH.add(V);
+			if (dV > 0) {
+				for (double V = VStart; V <= VFinish; V += dV)
+					_VPATH.add(V);
 
-			for (double V = VMax; V >= VMin; V -= dV)
-				_VPATH.add(V);
+				for (double V = VFinish; V >= VStart; V -= dV)
+					_VPATH.add(V);
+			}
+			if (dV < 0) {
+				for (double V = VStart; V >= VFinish; V += dV)
+					_VPATH.add(V);
+
+				for (double V = VFinish; V <= VStart; V -= dV)
+					_VPATH.add(V);
+			}
 		}
+	}
+
+	public void setCountinousRamping(boolean ON) {
+		_continousRamping = ON;
+	}
+
+	public boolean getCountinousRamping() {
+		return _continousRamping;
 	}
 
 	public void setFlagON(boolean ON) {
 		ChangeSupport.firePropertyChange("flagON", _flagON, ON);
 		_flagON = ON;
+
+		if (ON == true) {
+			_actualCharaceristic.clear();
+			_MarkPlaceVPATH = 0;
+			_flagChangeVoltage = true;
+		}
 	}
 
 	public boolean getFlagON() {
@@ -88,7 +112,11 @@ public class IVCharacteristic implements PropertyChangeListener {
 					_oldCharacteristics.add(new SingleCharacteristic(_actualCharaceristic));
 
 					ChangeSupport.firePropertyChange("FinishedIVCharacteristic", null, null);
-					_actualCharaceristic.clear();
+
+					if (_continousRamping)
+						_actualCharaceristic.clear();
+					else
+						_flagON = false;
 				}
 
 			} catch (Exception e) {
