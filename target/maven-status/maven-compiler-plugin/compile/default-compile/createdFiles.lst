@@ -1,7 +1,7 @@
-SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$41$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$26$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$7.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$48.class
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$43$1.class
 SingleSensorBoard\ModeVoltAmpMeter.class
 SingleSensorBoard\Commands\HeaterCommands.class
 SingleSensorBoard\Menu\CalibrateHeater$1.class
@@ -21,6 +21,7 @@ SingleSensorBoard\Commands\SingleBoardCommands.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$19.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$39.class
 SingleSensorBoard\Menu\CalibrateHeater.class
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$51.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$11.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$49.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$45$1.class
@@ -69,7 +70,6 @@ SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$36.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$46.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$26.class
 SingleSensorBoard\IVCharacteristic$SingleCharacteristic.class
-SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$44$1.class
 SingleSensorBoard\IVCharacteristic.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$24.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$44.class

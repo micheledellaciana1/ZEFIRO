@@ -6,12 +6,14 @@ import java.io.File;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -682,7 +684,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 		menu.add(BuildChartPropertyMenu());
 		menu.add(BuildExportMenu());
 
-		menu.add(new AbstractAction("Clear Chart") {
+		menu.add(new AbstractAction("Clear Charts") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				_TM.addTask(new ATask() {
@@ -776,7 +778,30 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			}
 		});
 
+		final JCheckBoxMenuItem acquireDataCheckBox = new JCheckBoxMenuItem();
+		acquireDataCheckBox.setState(true);
+		acquireDataCheckBox.setAction(new AbstractAction("Acquire data") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (acquireDataCheckBox.getState() == true) {
+					SingleSensorBoard.getChamberHumidity().Enable();
+					SingleSensorBoard.getChamberTemperature().Enable();
+					SingleSensorBoard.getHeater().Enable();
+					SingleSensorBoard.getVoltAmpMeter().Enable();
+				} else {
+					SingleSensorBoard.getChamberHumidity().Disable();
+					SingleSensorBoard.getChamberTemperature().Disable();
+					SingleSensorBoard.getHeater().Disable();
+					SingleSensorBoard.getVoltAmpMeter().Disable();
+				}
+			}
+
+		});
+
+		menu.add(acquireDataCheckBox);
+
 		return menu;
+
 	}
 
 	protected JMenu BuildAdvancedMenu() {
@@ -903,24 +928,20 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 	protected JMenu BuildADCMenu() {
 		JMenu menu = new JMenu("ADC");
-		menu.add(new AbstractAction("Set Averange time ADC") {
+		menu.add(new AbstractAction("Set number of averange") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final String answer = JOptionPane.showInputDialog(null, "Set Averange time ADC (ms)");
-				_TM.addTask(new ATask() {
-					@Override
-					public void execution() {
-						try {
-							_VoltAmpMeterCommands.setAverangeTimeADC(Integer.valueOf(answer));
-						} catch (Exception _e) {
-							if (verbose) {
-								JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
-								_e.printStackTrace();
-							}
-						}
+				final String answer = JOptionPane.showInputDialog(null, "Set number of averanges");
+				try {
+					SingleSensorBoard.getVoltAmpMeter().numberOfAverange = Integer.valueOf(answer);
+				} catch (Exception _e) {
+					if (verbose) {
+						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+						_e.printStackTrace();
 					}
-				});
+				}
 			}
+
 		});
 
 		return menu;
