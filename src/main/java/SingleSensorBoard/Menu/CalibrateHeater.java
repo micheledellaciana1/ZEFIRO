@@ -45,7 +45,8 @@ public class CalibrateHeater implements PropertyChangeListener {
                     Temperature.add(T);
                 }
 
-                _heater.setLUT(new LookUpTable(Resistance, Temperature));
+                LookUpTable LUT = new LookUpTable(Resistance, Temperature);
+                _heater.setLUT(LUT);
                 _heater.ChangeSupport.removePropertyChangeListener(this);
             }
         }

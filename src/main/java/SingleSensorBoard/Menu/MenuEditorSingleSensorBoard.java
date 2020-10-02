@@ -13,7 +13,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -30,6 +29,7 @@ import core.DataManager;
 import core.LoopManager;
 import core.MenuEditorChartFrame;
 import core.TaskManager;
+import core.themal.LookUpTable;
 
 public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
@@ -628,9 +628,68 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 	@Override
 	public JMenu BuildExportMenu() {
-		JMenu menu = super.BuildExportMenu();
+		JMenu menu = new JMenu("Export");
+		menu.add(super.BuildExportMenu());
 		menu.add(BuildExportEveryData());
+		menu.add(BuildExportHeaterCalibration());
 		return menu;
+	}
+
+	public JMenu BuildImportMenu() {
+		JMenu menu = new JMenu("Import");
+		menu.add(BuildImporttHeaterCalibration());
+		return menu;
+	}
+
+	JMenuItem BuildExportHeaterCalibration() {
+		JMenuItem item = new JMenuItem(new AbstractAction("Export Heater Calibration") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileFilter(new FileNameExtensionFilter(".txt", "txt"));
+				fileChooser.setDialogTitle("Save");
+
+				if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
+					try {
+						SingleSensorBoard.getHeater().getLUT()
+								.exportToFile(fileChooser.getSelectedFile().getAbsolutePath());
+					} catch (Exception _e) {
+						if (verbose) {
+							JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+							_e.printStackTrace();
+						}
+					}
+			}
+		});
+
+		return item;
+	}
+
+	JMenuItem BuildImporttHeaterCalibration() {
+
+		JMenuItem item = new JMenuItem(new AbstractAction("Import Heater Calibration") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setDialogTitle("Import Calibation");
+				fileChooser.setFileFilter(new FileNameExtensionFilter(".txt", "txt"));
+
+				if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+					try {
+						LookUpTable LUT = new LookUpTable(fileChooser.getSelectedFile().getAbsolutePath());
+						SingleSensorBoard.getHeater().setLUT(LUT);
+					} catch (Exception _e) {
+						if (verbose) {
+							JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
+							_e.printStackTrace();
+						}
+					}
+			}
+		});
+
+		return item;
 	}
 
 	public JMenuItem BuildExportEveryData() {
@@ -686,6 +745,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 		menu.add(BuildChartPropertyMenu());
 		menu.add(BuildExportMenu());
+		menu.add(BuildImportMenu());
 
 		menu.add(new AbstractAction("Clear Charts") {
 			@Override
