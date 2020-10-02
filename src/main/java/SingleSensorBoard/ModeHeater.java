@@ -22,7 +22,7 @@ public class ModeHeater extends AMultipleDataStream {
         super(name, period, 5);
         _Commands = Commands;
 
-        _FBC = new FeedBackController_type1(0.01, 0.005, 0.00, 1);
+        _FBC = new FeedBackController_type1(0.02, 0.01, 0.00, 1);
         _FBC.OnlyPositiveValue = true;
         _FBC.MaxResponce = 3.3;
         _FBC.set_target_value(0);

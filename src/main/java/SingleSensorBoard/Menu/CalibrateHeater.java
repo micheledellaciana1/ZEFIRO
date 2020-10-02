@@ -9,7 +9,6 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 import SingleSensorBoard.ModeChamberTemperature;
 import SingleSensorBoard.ModeHeater;
 import SingleSensorBoard.Commands.HeaterCommands;
-import SingleSensorBoard.Commands.SingleBoardCommands;
 import core.ATask;
 import core.TaskManager;
 import core.themal.LookUpTable;
@@ -24,7 +23,6 @@ public class CalibrateHeater implements PropertyChangeListener {
     private double _beta;
     private ModeHeater _heater;
     private long _start;
-    private double _oldPeriod;
     private ModeChamberTemperature _chamberTemperature;
 
     @Override
@@ -49,15 +47,12 @@ public class CalibrateHeater implements PropertyChangeListener {
 
                 _heater.setLUT(new LookUpTable(Resistance, Temperature));
                 _heater.ChangeSupport.removePropertyChangeListener(this);
-                _heater.setPeriod(_oldPeriod);
             }
         }
     }
 
     public CalibrateHeater(double alpha, double beta, final TaskManager TM, final HeaterCommands commands,
             final ModeHeater heater, final ModeChamberTemperature chamberTemperature) {
-        _oldPeriod = heater.getMillisPeriod();
-        heater.setPeriod(2000);
 
         _alpha = alpha;
         _beta = beta;
