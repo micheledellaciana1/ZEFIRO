@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import SingleSensorBoard.Commands.HeaterCommands;
-import SingleSensorBoard.Commands.HeaterCommands;
 
 import java.awt.geom.Point2D;
 
@@ -17,15 +16,13 @@ public class ModeHeater extends AMultipleDataStream {
     protected boolean _feedbackON = false;
     protected HeaterCommands _Commands;
     protected long _timeLastCallFeedback;
-    public long checkTimeFeedback = 500;
-
-    public int NAverange = 8;
+    public long checkTimeFeedback = 100;
 
     public ModeHeater(String name, long period, HeaterCommands Commands) {
         super(name, period, 5);
         _Commands = Commands;
 
-        _FBC = new FeedBackController_type1(0.017, 0.005, 0, 0.25);
+        _FBC = new FeedBackController_type1(0.01, 0.005, 0.00, 1);
         _FBC.OnlyPositiveValue = true;
         _FBC.MaxResponce = 3.3;
         _FBC.set_target_value(0);
@@ -66,13 +63,8 @@ public class ModeHeater extends AMultipleDataStream {
     @Override
     public ArrayList<Double> acquireData() {
         ArrayList<Double> data = new ArrayList<Double>();
-        double resistance = 0;
 
-        for (int i = 0; i < NAverange; i++) {
-            resistance += _Commands.measureResistanceHeater();
-        }
-
-        resistance /= NAverange;
+        double resistance = _Commands.measureResistanceHeater();
         double Temperature;
 
         try {

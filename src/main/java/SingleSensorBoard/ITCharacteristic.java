@@ -91,7 +91,7 @@ public class ITCharacteristic implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (_flagON && _heater.getFeedbakON() && evt.getPropertyName().equals("FinishedLoop"))
+		if (_flagON && _heater.getFeedbakON() && evt.getPropertyName().equals("FinishedLoop")) {
 			try {
 				if (_flagChangeTemperature) {
 					_heater.setTargetTemperature(_TPATH.get(_MarkPlaceTPATH));
@@ -131,6 +131,7 @@ public class ITCharacteristic implements PropertyChangeListener {
 			Exception e) {
 				e.printStackTrace();
 			}
+		}
 	}
 
 	public SingleCharacteristic getActualCharacteristic() {

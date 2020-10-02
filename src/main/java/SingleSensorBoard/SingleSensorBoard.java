@@ -38,6 +38,13 @@ public class SingleSensorBoard extends ChartFrame {
 					public void execution() {
 						ResetUI();
 						_commands.closeDevice();
+						System.out.println("Closing serial...");
+
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+						}
+
 						System.exit(0);
 					}
 				});
@@ -46,7 +53,7 @@ public class SingleSensorBoard extends ChartFrame {
 
 		_TMInstace = new TaskManager("TMSingleSensorBoard");
 		_commands = new SingleBoardCommands();
-		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 10, _commands.getVoltAmpMeterCommands());
+		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 100, _commands.getVoltAmpMeterCommands());
 		_heater = new ModeHeater("Heater", 100, _commands.getHeaterCommands());
 		_ivCharacteristic = new IVCharacteristic(_commands.getVoltAmpMeterCommands(), _voltAmpMeter);
 		_itCharacteristic = new ITCharacteristic(_voltAmpMeter, _heater);

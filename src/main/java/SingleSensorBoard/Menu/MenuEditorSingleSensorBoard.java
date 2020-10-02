@@ -536,6 +536,7 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (checkbox.getState() == true) {
+
 					if (!SingleSensorBoard.getHeater().getFeedbakON()) {
 						JOptionPane.showMessageDialog(null, "Heater feedback activated", "Feedback issue",
 								JOptionPane.WARNING_MESSAGE);
@@ -543,7 +544,9 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 					}
 
 					SingleSensorBoard.getHeater().ChangeSupport.addPropertyChangeListener(_itCharacteristic);
+					System.out.println(10);
 				} else {
+					System.out.println(10);
 					SingleSensorBoard.getHeater().ChangeSupport.removePropertyChangeListener(_itCharacteristic);
 				}
 
@@ -570,8 +573,8 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 			public void menuSelected(MenuEvent e) {
 				if (checkbox.getState() != _itCharacteristic.getFlagON())
 					checkbox.setState(_itCharacteristic.getFlagON());
-				if (checkbox.getState() != _itCharacteristic.getCountinousRamping())
-					checkbox.setState(_itCharacteristic.getCountinousRamping());
+				if (checkboxCountinousRamping.getState() != _itCharacteristic.getCountinousRamping())
+					checkboxCountinousRamping.setState(_itCharacteristic.getCountinousRamping());
 			}
 
 			@Override
@@ -928,20 +931,10 @@ public class MenuEditorSingleSensorBoard extends MenuEditorChartFrame {
 
 	protected JMenu BuildADCMenu() {
 		JMenu menu = new JMenu("ADC");
-		menu.add(new AbstractAction("Set number of averange") {
+		menu.add(new AbstractAction("todo") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final String answer = JOptionPane.showInputDialog(null, "Set number of averanges");
-				try {
-					SingleSensorBoard.getVoltAmpMeter().numberOfAverange = Integer.valueOf(answer);
-				} catch (Exception _e) {
-					if (verbose) {
-						JOptionPane.showMessageDialog(null, _e.toString(), "ERROR", JOptionPane.ERROR_MESSAGE);
-						_e.printStackTrace();
-					}
-				}
 			}
-
 		});
 
 		return menu;

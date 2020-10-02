@@ -9,7 +9,6 @@ import java.awt.geom.Point2D;
 
 public class ModeVoltAmpMeter extends AMultipleDataStream {
     private VoltAmpMeterCommands _Commands;
-    public int numberOfAverange = 10;
 
     public ModeVoltAmpMeter(String name, long period, VoltAmpMeterCommands Commands) {
         super(name, period, 3);
@@ -24,22 +23,13 @@ public class ModeVoltAmpMeter extends AMultipleDataStream {
         double current = 0;
         double resistance = 0;
 
-        int count1 = 0;
-        int count2 = 0;
+        voltage = _Commands.measureVoltageFall();
+        current = _Commands.measureCurrent();
+        resistance += voltage / current;
 
-        for (int i = 0; i < numberOfAverange; i++) {
-            voltage += _Commands.measureVoltageFall();
-            current += _Commands.measureCurrent();
-            count1++;
-            if (current != 0) {
-                resistance += voltage / current;
-                count2++;
-            }
-        }
-
-        data.add(voltage / count1);
-        data.add(current / count1);
-        data.add(resistance / count2);
+        data.add(voltage);
+        data.add(current);
+        data.add(resistance);
 
         return data;
     }

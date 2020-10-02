@@ -23,7 +23,7 @@ public class HeaterCommands extends ACommands {
 
     public double measureResistanceHeater() {
         if (isASimulation)
-            return 0 + Math.random() * 0.1;
+            return _VoltageHeaterSetted + Math.random() * 0.1;
 
         _serial.println("EventMeasureHeaterResistance");
         String resistanceHeater = null;

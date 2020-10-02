@@ -3,8 +3,6 @@ package SingleSensorBoard.Menu;
 import java.util.AbstractList;
 import java.util.ArrayList;
 
-import SingleSensorBoard.SingleSensorBoard;
-
 import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
