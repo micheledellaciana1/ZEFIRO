@@ -1,7 +1,7 @@
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$41$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$26$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$7.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$48.class
-SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$43$1.class
 SingleSensorBoard\ModeVoltAmpMeter.class
 SingleSensorBoard\Commands\HeaterCommands.class
 SingleSensorBoard\Menu\CalibrateHeater$1.class
@@ -33,6 +33,7 @@ SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$42.class
 SingleSensorBoard\SingleSensorBoard$1$1.class
 SingleSensorBoard\SingleSensorBoard$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$20$1.class
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$48$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$8.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$37.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$50.class
@@ -41,7 +42,6 @@ SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$22.class
 SingleSensorBoard\SingleSensorBoard.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$28.class
 SingleSensorBoard\ListenerIVCharacteristic\LinearRegressionIVCharacteristic.class
-SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$38$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$45.class
 SingleSensorBoard\Commands\SingleBoardCommands$1.class
@@ -49,6 +49,7 @@ SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$10.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$30.class
 SingleSensorBoard\Menu\ActionSetFeedbackParameters$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$25.class
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$53.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$40$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$5.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$13.class
@@ -61,7 +62,6 @@ SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$27.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$42$1.class
 SingleSensorBoard\ModeChamberTemperature.class
 SingleSensorBoard\DifferentialResistanceListener.class
-SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$46$1.class
 SingleSensorBoard\ITCharacteristic$SingleCharacteristic.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$2.class
 SingleSensorBoard\WatchDog\PowerHeaterWatchDog$1.class
@@ -70,16 +70,18 @@ SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$36.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$46.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$26.class
 SingleSensorBoard\IVCharacteristic$SingleCharacteristic.class
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$44$1.class
 SingleSensorBoard\IVCharacteristic.class
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$49$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$24.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$44.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$35$1.class
 SingleSensorBoard\main\App.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$18$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$32.class
+SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$52.class
 SingleSensorBoard\ModeHeater.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$47.class
-SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$39$1.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$12.class
 SingleSensorBoard\Menu\MenuEditorSingleSensorBoard$18.class
 SingleSensorBoard\Menu\ActionSetFeedbackParameters$3.class

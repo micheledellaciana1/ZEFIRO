@@ -53,15 +53,15 @@ public class SingleSensorBoard extends ChartFrame {
 
 		_TMInstace = new TaskManager("TMSingleSensorBoard");
 		_commands = new SingleBoardCommands();
-		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 100, _commands.getVoltAmpMeterCommands());
-		_heater = new ModeHeater("Heater", 100, _commands.getHeaterCommands());
+		_voltAmpMeter = new ModeVoltAmpMeter("VoltAmpMeter", 250, _commands.getVoltAmpMeterCommands());
+		_heater = new ModeHeater("Heater", 250, _commands.getHeaterCommands());
 		_ivCharacteristic = new IVCharacteristic(_commands.getVoltAmpMeterCommands(), _voltAmpMeter);
 		_itCharacteristic = new ITCharacteristic(_voltAmpMeter, _heater);
 		_LRIVCharacteristic = new LinearRegressionIVCharacteristic(_ivCharacteristic);
 		_PHWatchDog = new PowerHeaterWatchDog(_heater, _commands.getHeaterCommands(), _TMInstace, 0);
-		_ChamberHumidity = new ModeChamberHumidity(_commands.getTempHumidityCommands(), "ChamberHumidity", 100);
+		_ChamberHumidity = new ModeChamberHumidity(_commands.getTempHumidityCommands(), "ChamberHumidity", 250);
 		_ChamberTemperature = new ModeChamberTemperature(_commands.getTempHumidityCommands(), "ChamberTemperature",
-				100);
+				250);
 		_differentialResistance = new DifferentialResistanceListener(_commands.getVoltAmpMeterCommands(),
 				_voltAmpMeter);
 		_MenuEditor = new MenuEditorSingleSensorBoard(this, _commands.getHeaterCommands(),

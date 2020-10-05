@@ -25,13 +25,19 @@ public class ModeVoltAmpMeter extends AMultipleDataStream {
 
         voltage = _Commands.measureVoltageFall();
         current = _Commands.measureCurrent();
-        resistance += voltage / current;
 
         data.add(voltage);
         data.add(current);
-        data.add(resistance);
+
+        if (current != 0) {
+            resistance = voltage / current;
+            data.add(resistance);
+        } else {
+            data.add(Double.MAX_VALUE);
+        }
 
         return data;
+
     }
 
     public Vector<Point2D> getVoltage() {
